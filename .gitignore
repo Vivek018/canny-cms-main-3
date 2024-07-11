@@ -1,0 +1,12 @@
+node_modules
+prisma/migrations
+prisma/data.db
+
+/.cache
+/build
+.env
+
+
+
+# sst
+.sst

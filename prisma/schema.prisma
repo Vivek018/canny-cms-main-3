@@ -1,0 +1,270 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+// prisma/schema.prisma
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Company {
+  id           String  @id @default(cuid())
+  name         String  @unique
+  photo        String?
+  address      String? @unique
+  email_suffix String?
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  project  Project[]
+  user     User[]
+  document Document[]
+  bill     Bill[]
+}
+
+model Project {
+  id            String    @id @default(cuid())
+  name          String
+  starting_date DateTime
+  ending_date   DateTime?
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+
+  company_id String?
+  company    Company? @relation(fields: [company_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  project_location Project_Location[]
+  user             User[]
+  document         Document[]
+  bill             Bill[]
+
+  @@unique([company_id, name])
+}
+
+model Project_Location {
+  id             String   @id @default(cuid())
+  street_address String?
+  city           String
+  state          String?
+  postal_code    Int?
+  country        String   @default("India")
+  esic_code      String?
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  project_id String?
+  project    Project? @relation(fields: [project_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  employee      Employee[]
+  vehicle       Vehicle[]
+  user          User[]
+  payment_field Payment_Field[]
+  document      Document[]
+  bill          Bill[]
+
+  @@unique([project_id, city])
+}
+
+model Employee {
+  id                String    @id @default(cuid())
+  full_name         String
+  guardian_name     String
+  designation       String?
+  skill_type        String    @default("unskilled")
+  date_of_birth     DateTime?
+  gender            String?
+  education         String?
+  photo             String?
+  employee_code     String    @unique
+  uan_no            String    @unique
+  esic_id           String    @unique
+  mobile            String?   @unique
+  status            String    @default("active")
+  joining_date      DateTime  @default(now())
+  exit_date         DateTime?
+  aadhar_number     String?   @unique
+  pan_number        String?   @unique
+  permanent_address String?   @unique
+  created_at        DateTime  @default(now())
+  updated_at        DateTime  @updatedAt
+
+  project_location_id String?
+  project_location    Project_Location? @relation(fields: [project_location_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  attendance      Attendance[]
+  bank_detail     Bank_Details?
+  advance_payment Advance_Payment[]
+  payment_data    Payment_Data[]
+  vehicle         Vehicle?
+  document        Document[]
+  bill            Bill[]
+}
+
+model Bank_Details {
+  id             String   @id @default(cuid())
+  account_number String   @unique
+  ifsc_code      String?
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  employee_id String   @unique
+  employee    Employee @relation(fields: [employee_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+}
+
+model Attendance {
+  id          String   @id @default(cuid())
+  date        DateTime
+  no_of_hours Int      @default(8)
+  present     Boolean  @default(true)
+  holiday     Boolean  @default(false)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  employee_id String?
+  employee    Employee? @relation(fields: [employee_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  payment_data Payment_Data[]
+}
+
+model Payment_Field {
+  id                   String          @id @default(cuid())
+  name                 String          @unique
+  description          String?
+  type                 String?
+  skill_type           String          @default("all")
+  value                Float?
+  value_type           String          @default("daily")
+  sort_index           Int?
+  is_deduction         Boolean         @default(false)
+  service_charge_field Boolean         @default(false)
+  created_at           DateTime        @default(now())
+  updated_at           DateTime        @updatedAt
+  percentage_of        Payment_Field[] @relation("PercentageOf")
+  percentage_on        Payment_Field[] @relation("PercentageOf")
+
+  project_location Project_Location[]
+  payment_data     Payment_Data[]
+}
+
+model User {
+  id             String    @id @default(cuid())
+  full_name      String
+  designation    String
+  photo          String?
+  email          String    @unique
+  last_signed_in DateTime?
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @updatedAt
+
+  role_id             String?
+  role                User_Role?        @relation(fields: [role_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  company_id          String?
+  company             Company?          @relation(fields: [company_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  project_id          String?
+  project             Project?          @relation(fields: [project_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  project_location_id String?
+  project_location    Project_Location? @relation(fields: [project_location_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  advance_payment Advance_Payment[]
+}
+
+model User_Role {
+  id         String   @id @default(cuid())
+  name       String   @unique
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user User[]
+}
+
+model Payment_Data {
+  id         String   @id @default(cuid())
+  amount     Float
+  month      Int
+  year       Int
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  employee_id      String?
+  employee         Employee?      @relation(fields: [employee_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  payment_field_id String?
+  payment_field    Payment_Field? @relation(fields: [payment_field_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  attendance Attendance[]
+}
+
+model Advance_Payment {
+  id                    String    @id @default(cuid())
+  label                 String
+  amount                Float
+  credited              Boolean   @default(false)
+  confirmation_document String?
+  payment_date          DateTime?
+  created_at            DateTime  @default(now())
+  updated_at            DateTime  @updatedAt
+
+  user_id     String?
+  user        User?     @relation(fields: [user_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  employee_id String?
+  employee    Employee? @relation(fields: [employee_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+}
+
+model Bill {
+  id         String   @id @default(cuid())
+  label      String
+  amount     Float
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  employee_id         String?
+  employee            Employee?         @relation(fields: [employee_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  company_id          String?
+  company             Company?          @relation(fields: [company_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  project_id          String?
+  project             Project?          @relation(fields: [project_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  project_location_id String?
+  project_location    Project_Location? @relation(fields: [project_location_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+}
+
+model Document {
+  id         String   @id @default(cuid())
+  label      String   @unique
+  belongs_to String   @default("other")
+  path       String   @unique
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  employee_id         String?
+  employee            Employee?         @relation(fields: [employee_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  company_id          String?
+  company             Company?          @relation(fields: [company_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  project_id          String?
+  project             Project?          @relation(fields: [project_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  project_location_id String?
+  project_location    Project_Location? @relation(fields: [project_location_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  vehicle_id          String?
+  vehicle             Vehicle?          @relation(fields: [vehicle_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+}
+
+model Vehicle {
+  id            String   @id @default(cuid())
+  name          String
+  number        String
+  type          String   @default("car")
+  year_bought   Int?
+  kms_driven    Int?
+  other_details String?
+  status        String   @default("active")
+  price         Float?
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  project_location_id String?
+  project_location    Project_Location? @relation(fields: [project_location_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  employee_id         String?           @unique
+  employee            Employee?         @relation(fields: [employee_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  document Document[]
+}
