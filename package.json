@@ -6,7 +6,8 @@
   "scripts": {
     "build": "run-s build:*",
     "build:icons": "tsx ./other/build-icons.ts",
-    "build:remix": "remix vite:build --sourcemapClient",
+    "build:remix": "remix vite:build",
+    "build:server": "tsx ./other/build-server.ts",
     "dev": "node ./server/dev-server.js",
     "dick": "remix vite:dev",
     "format": "prettier --write .",
@@ -15,6 +16,13 @@
     "start": "NODE_ENV=production node .",
     "typecheck": "tsc"
   },
+  "eslintIgnore": [
+    "/node_modules",
+    "/build",
+    "/public/build",
+    "/playwright-report",
+    "/server-build"
+  ],
   "dependencies": {
     "@aws-sdk/client-s3": "^3.588.0",
     "@aws-sdk/s3-request-presigner": "^3.588.0",
@@ -26,10 +34,9 @@
     "@radix-ui/react-slot": "^1.0.2",
     "@radix-ui/react-tooltip": "^1.1.2",
     "@react-pdf/renderer": "^3.4.4",
-    "@remix-run/express": "^2.8.1",
-    "@remix-run/node": "^2.8.1",
-    "@remix-run/react": "^2.8.1",
-    "@remix-run/serve": "^2.8.1",
+    "@remix-run/express": "2.9.2",
+    "@remix-run/node": "2.9.2",
+    "@remix-run/react": "2.9.2",
     "@sentry/remix": "^7.110.1",
     "@tanstack/react-table": "^8.16.0",
     "address": "^2.0.2",
@@ -42,9 +49,11 @@
     "compression": "^1.7.4",
     "cookie": "^0.6.0",
     "cors": "^2.8.5",
+    "esbuild": "^0.23.0",
     "eslint-plugin-remix-react-routes": "^1.0.5",
     "execa": "^8.0.1",
     "express": "^4.19.2",
+    "express-rate-limit": "^7.3.1",
     "get-port": "^7.1.0",
     "isbot": "^4.1.0",
     "lodash.debounce": "^4.0.8",
@@ -62,8 +71,9 @@
   },
   "devDependencies": {
     "@faker-js/faker": "^8.4.1",
-    "@remix-run/dev": "^2.8.1",
+    "@remix-run/dev": "2.9.2",
     "@remix-run/eslint-config": "^2.8.1",
+    "@remix-run/serve": "2.9.2",
     "@types/compression": "^1.7.5",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
@@ -96,7 +106,8 @@
     "vite-tsconfig-paths": "^4.2.1"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": "21.1.0",
+    "npm": "10.2.1"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

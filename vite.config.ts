@@ -7,10 +7,21 @@ const MODE = process.env.NODE_ENV
 
 export default defineConfig({
 	build: {
-    cssMinify: MODE === 'production',
-    },
-    plugins: [
-      remix({
+		cssMinify: MODE === 'production',
+		rollupOptions: {
+			external: [/node:.*/, 'stream', 'crypto', 'fsevents'],
+		},
+
+		assetsInlineLimit: (source: string) => {
+			if (source.endsWith('sprite.svg')) {
+				return false
+			}
+		},
+
+		sourcemap: true,
+	},
+	plugins: [
+		remix({
 			ignoredRouteFiles: ['**/*'],
 			serverModuleFormat: 'esm',
 			routes: async defineRoutes => {

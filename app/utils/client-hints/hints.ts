@@ -7,9 +7,9 @@ export function getHintsUtils(hints: any) {
 			)
 		}
 		const value = cookieString
-			.split(';')
-			.map((c: string) => c.trim())
-			.find((c: string) => c.startsWith(hint.cookieName + '='))
+			?.split(';')
+			?.map((c: string) => c.trim())
+			?.find((c: string) => c.startsWith(hint.cookieName + '='))
 			?.split('=')[1]
 		return value ? decodeURIComponent(value) : null
 	}

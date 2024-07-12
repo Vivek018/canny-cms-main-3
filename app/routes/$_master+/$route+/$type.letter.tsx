@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { singleRouteName } from '@/constant'
 import { useIsDocument } from '@/utils/clients/is-document'
 import { cn } from '@/utils/misx'
-import { letterTypesInputList } from '@/utils/pdf-list'
+import { letterTypesInputList } from '@/utils/pdf-list.client'
 import { pdfData, pdfInputList } from '@/utils/servers/pdf-list.server'
 
 export async function loader({ params }: LoaderFunctionArgs) {

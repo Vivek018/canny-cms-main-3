@@ -16,7 +16,7 @@ import { singleRouteName } from '@/constant'
 import { useIsDocument } from '@/utils/clients/is-document'
 import { imageFieldName } from '@/utils/input-types'
 import { cn, formatString, replaceUnderscore } from '@/utils/misx'
-import { generateEnabledList } from '@/utils/pdf-list'
+import { generateEnabledList } from '@/utils/pdf-list.client'
 import {
 	getRouteNameSelector,
 	getRouteNameSelectorHeading,
