@@ -15,7 +15,7 @@ export function PaginationButtons({
 		'h-full w-min bg-accent p-1.5 text-accent-foreground drop-shadow-sm hover:bg-accent/50 focus-visible:brightness-75 disabled:bg-transparent'
 
 	return (
-		<div className="mb-0.5 mt-1.5 flex items-center justify-center gap-5 text-sm">
+		<div className="mb-1 mt-1.5 flex items-center justify-center gap-5 text-sm">
 			<Button
 				variant="default"
 				name="first"
