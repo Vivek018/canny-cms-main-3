@@ -211,7 +211,7 @@ export default function MasterIndex() {
 			{datasHeader ? (
 				<div
 					className={cn(
-						'flex h-full min-h-80 flex-col gap-2 rounded-md bg-muted p-3 text-muted-foreground',
+						'flex h-[90%] min-h-80 flex-col gap-2 rounded-md bg-muted p-3 text-muted-foreground',
 					)}
 				>
 					<div className="flex w-full items-center">
