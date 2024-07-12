@@ -151,7 +151,7 @@ export default function MasterIndex() {
 	)
 
 	return (
-		<div className="flex h-screen flex-col py-1">
+		<div className="flex h-full flex-col py-1">
 			<Modal
 				link={`/${name}`}
 				modalClassName={cn(!showDelete && 'hidden')}
