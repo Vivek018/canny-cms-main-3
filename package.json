@@ -50,7 +50,6 @@
     "cookie": "^0.6.0",
     "cors": "^2.8.5",
     "esbuild": "^0.21.0",
-    "eslint-plugin-remix-react-routes": "^1.0.5",
     "execa": "^8.0.1",
     "express": "^4.19.2",
     "express-rate-limit": "^7.3.1",
