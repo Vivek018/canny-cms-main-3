@@ -151,7 +151,7 @@ export default function MasterIndex() {
 	)
 
 	return (
-		<div>
+		<div className="flex h-screen flex-col py-1">
 			<Modal
 				link={`/${name}`}
 				modalClassName={cn(!showDelete && 'hidden')}
@@ -211,7 +211,7 @@ export default function MasterIndex() {
 			{datasHeader ? (
 				<div
 					className={cn(
-						'my-2 flex flex-col gap-2 rounded-md bg-muted p-3 text-muted-foreground',
+						'my-2 flex h-[90%] flex-col gap-2 rounded-md bg-muted p-3 text-muted-foreground',
 					)}
 				>
 					<div className="flex w-full items-center">
@@ -295,6 +295,7 @@ export default function MasterIndex() {
 							page: parseInt(page),
 						})}
 						data={data as any}
+						className="flex-1"
 					/>
 					<Form method="POST" action={`/filters/${name}`}>
 						{filters ? (

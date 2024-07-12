@@ -4,6 +4,7 @@ import {
 	useReactTable,
 } from '@tanstack/react-table'
 import { useEffect } from 'react'
+import { cn } from '@/utils/misx'
 import {
 	Table,
 	TableBody,
@@ -19,6 +20,7 @@ type DataTableProps<TData> = {
 	rowSelection?: any
 	setRowSelection?: React.Dispatch<React.SetStateAction<any>>
 	setRows: React.Dispatch<React.SetStateAction<any>>
+	className?: string
 }
 
 export function DataTable<TData>({
@@ -27,6 +29,7 @@ export function DataTable<TData>({
 	rowSelection,
 	setRowSelection,
 	setRows,
+	className,
 }: DataTableProps<TData>) {
 	const table = useReactTable({
 		data,
@@ -42,7 +45,7 @@ export function DataTable<TData>({
 
 	useEffect(() => {
 		if (table.getSelectedRowModel().rows.length) {
-      setRows([])
+			setRows([])
 			table
 				.getSelectedRowModel()
 				.rows.map((selectedRow: any) =>
@@ -54,16 +57,18 @@ export function DataTable<TData>({
 	}, [rowSelection, setRows, table])
 
 	return (
-		<div className="z-30 relative min-w-full overflow-x-scroll no-scrollbar rounded-md">
-			<Table>
+		<div
+			className={cn(
+				'no-scrollbar relative z-20 max-h-full min-w-full overflow-scroll rounded-md',
+				className,
+			)}
+		>
+			<Table className="min-w-max">
 				<TableHeader>
 					{table.getHeaderGroups().map(headerGroup => (
-						<TableRow key={headerGroup.id} className="min-w-max">
+						<TableRow key={headerGroup.id} className="">
 							{headerGroup.headers.map(header => (
-								<TableHead
-									key={header.id}
-									className="min-w-max py-[9px] capitalize"
-								>
+								<TableHead key={header.id} className="py-4 capitalize">
 									{header.isPlaceholder
 										? null
 										: flexRender(
@@ -81,7 +86,6 @@ export function DataTable<TData>({
 							<TableRow
 								key={row.id}
 								data-state={row.getIsSelected() && 'selected'}
-								className="min-w-max overflow-y-visible overflow-x-scroll"
 							>
 								{row.getVisibleCells().map(cell => {
 									return (
