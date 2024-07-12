@@ -27,7 +27,7 @@ export function Modal({
 	return (
 		<div
 			className={cn(
-				'min-w-screen absolute inset-0 z-40 grid min-h-screen place-items-end',
+				'min-w-screen absolute inset-0 z-30 grid min-h-screen place-items-end',
 				inMiddle && 'place-items-center',
 				modalClassName,
 			)}
@@ -37,7 +37,7 @@ export function Modal({
 				relative="path"
 				replace={true}
 				className={cn(
-					'min-w-screen absolute inset-0 z-50 grid h-full min-h-screen w-full place-items-end bg-transparent/70 text-transparent',
+					'min-w-screen absolute inset-0 z-30 grid h-full min-h-screen w-full place-items-end bg-transparent/70 text-transparent',
 					inMiddle && 'place-items-center',
 				)}
 				onClick={() => {
@@ -55,7 +55,7 @@ export function Modal({
 			</Link>
 			<div
 				className={cn(
-					'no-scrollbar z-50 h-full overflow-scroll border-[0.5px] border-muted-foreground/15 bg-background px-12 py-6 drop-shadow-lg dark:bg-muted',
+					'no-scrollbar z-40 h-full overflow-scroll border-[0.5px] border-muted-foreground/15 bg-background px-12 py-6 shadow-lg dark:bg-muted',
 					inMiddle ? 'h-min animate-pop rounded-md' : 'animate-slideInRight',
 					className,
 				)}

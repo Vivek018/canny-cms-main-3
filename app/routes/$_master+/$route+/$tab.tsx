@@ -126,7 +126,7 @@ export default function Tab() {
 	}, [page])
 
 	return (
-		<div className="pt-[18px]">
+		<div className="pt-3">
 			<Modal
 				link={`/${name}/${route}/${normalTab?.toLowerCase()}`}
 				modalClassName={cn(!showDelete && 'hidden')}
@@ -195,7 +195,7 @@ export default function Tab() {
 							</Link>
 						</Form>
 					</div>
-					<div className="mt-4 py-1">
+					<div>
 						<DataTable
 							rowSelection={rowSelection}
 							setRowSelection={setRowSelection}

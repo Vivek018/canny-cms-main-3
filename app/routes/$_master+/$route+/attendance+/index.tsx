@@ -237,7 +237,7 @@ export default function IndexAttendance() {
 
 	return (
 		<div className="flex flex-col">
-			<div className="mb-2 mt-3.5 flex justify-between gap-6">
+			<div className="mb-1 mt-3.5 flex justify-between gap-6">
 				<Form method="POST" className="flex gap-2">
 					<DetailsSelector
 						label="value"
@@ -331,7 +331,7 @@ export default function IndexAttendance() {
 					) : null}
 				</div>
 			</div>
-			<div className="py-3">{children}</div>
+			{children}
 		</div>
 	)
 }

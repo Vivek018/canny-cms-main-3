@@ -205,7 +205,7 @@ export default function IndexPaymentData() {
 
 	return (
 		<div className="flex flex-col">
-			<div className="mb-2 mt-3.5 flex justify-between gap-6">
+			<div className="mb-1 mt-3.5 flex justify-between gap-6">
 				<Form method="POST" className="flex gap-2">
 					<DetailsSelector
 						label="value"

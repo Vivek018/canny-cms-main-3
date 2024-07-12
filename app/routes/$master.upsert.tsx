@@ -130,7 +130,7 @@ export default function UpsertUser({
 					method="POST"
 					{...getFormProps(form)}
 					encType="multipart/form-data"
-					className="py-6"
+					className="py-3"
 				>
 					{data ? <input type="hidden" name="id" value={data?.id} /> : null}
 					{getSelectorKeys(routeName).map((value, index) => {

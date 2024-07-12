@@ -135,7 +135,7 @@ function DetailsDateRangeSelector({
 				{replaceUnderscore(name)}
 			</h1>
 			<Input
-				className="flex w-[170px] items-center justify-center border-muted-foreground bg-popover p-2 capitalize tracking-[0.2em] dark:border-muted-foreground"
+				className="flex w-[170px] items-center justify-center border-muted-foreground bg-popover p-2 capitalize tracking-[0.135em] dark:border-muted-foreground"
 				type="date"
 				defaultValue={searchParams.get(name) ?? ''}
 				placeholder={replaceUnderscore(name)}
@@ -158,7 +158,7 @@ export function DetailsSelector({
 	triggerClassName,
 	popClassName,
 	onChange,
-  length,
+	length,
 }: {
 	list: any
 	name: string
@@ -171,7 +171,7 @@ export function DetailsSelector({
 	triggerClassName?: string
 	popClassName?: string
 	onChange?: any
-  length?: number
+	length?: number
 }) {
 	const [open, setOpen] = useState(false)
 	const { ref: inputRef } = useRefFocus(open)
@@ -221,11 +221,14 @@ export function DetailsSelector({
 					)}
 				>
 					<span className={cn('mr-2 capitalize', noValue && 'text-gray-400')}>
-						{textTruncate(noValue ? replaceUnderscore(name) : valueLabel, length ?? 15)}
+						{textTruncate(
+							noValue ? replaceUnderscore(name) : valueLabel,
+							length ?? 15,
+						)}
 					</span>
 					<Icon name="triangle-down" size="md" />
 				</DetailsMenuTrigger>
-				<DetailsPopup className={cn('z-50', popClassName)}>
+				<DetailsPopup className={cn('z-50 w-52', popClassName)}>
 					<Command>
 						<CommandInput
 							ref={inputRef}
@@ -261,7 +264,7 @@ export function DetailsSelector({
 												)}
 											/>
 											<h2 className="ml-2 flex h-9 w-32 cursor-pointer flex-row items-center justify-start font-normal capitalize ">
-												{textTruncate(value[showLabel ?? label], length ?? 16)}
+												{textTruncate(value[showLabel ?? label], length ?? 18)}
 											</h2>
 											<Input
 												id={itemId}
