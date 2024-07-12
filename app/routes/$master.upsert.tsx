@@ -115,12 +115,12 @@ export default function UpsertUser({
 	return (
 		<Modal link={link ?? goBackLink} shouldNotNavigate>
 			<FormProvider context={form.context}>
-				<div className="mb-4 flex w-full items-start gap-2">
+				<div className="mb-4 mt-2 flex w-full items-center gap-2">
 					<Link
 						to={goBackLink}
-						className="rounded-sm px-1.5 py-1 hover:bg-accent"
+						className="grid h-full place-items-center rounded-sm px-1.5 py-1 hover:bg-accent"
 					>
-						<Icon name="chevron-left" size="lg" />
+						<Icon name="chevron-left" size="md" />
 					</Link>
 					<h1 className="text-2xl font-bold capitalize tracking-wide">
 						{!data ? 'Add' : 'Update'} {replaceUnderscore(routeName)}
@@ -130,6 +130,7 @@ export default function UpsertUser({
 					method="POST"
 					{...getFormProps(form)}
 					encType="multipart/form-data"
+					className="py-6"
 				>
 					{data ? <input type="hidden" name="id" value={data?.id} /> : null}
 					{getSelectorKeys(routeName).map((value, index) => {
