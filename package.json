@@ -13,7 +13,7 @@
     "format": "prettier --write .",
     "lint": "eslint .",
     "predev": "npm run build:icons --silent",
-    "start": "NODE_ENV=production node .",
+    "start": "prisma generate && prisma migrate deploy && NODE_ENV=production node .",
     "typecheck": "tsc"
   },
   "eslintIgnore": [
