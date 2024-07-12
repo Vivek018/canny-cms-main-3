@@ -5,7 +5,7 @@ generator client {
 // prisma/schema.prisma
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
+  url      = "file:./data.db?connection_limit=1"
 }
 
 model Company {
