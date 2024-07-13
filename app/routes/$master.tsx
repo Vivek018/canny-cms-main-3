@@ -151,7 +151,7 @@ export default function MasterIndex() {
 	)
 
 	return (
-		<div className="flex h-full flex-col py-4 pt-1">
+		<div className="flex h-[98%] flex-col pt-1">
 			<Modal
 				link={`/${name}`}
 				modalClassName={cn(!showDelete && 'hidden')}
@@ -210,7 +210,7 @@ export default function MasterIndex() {
 			) : null}
 			<div
 				className={cn(
-					'hidden max-h-full flex-1 flex-col gap-2 rounded-md bg-muted  p-3 text-muted-foreground',
+					'hidden max-h-[90%] flex-1 flex-col gap-2 rounded-md bg-muted  p-3 text-muted-foreground',
 					datasHeader && 'flex',
 				)}
 			>
