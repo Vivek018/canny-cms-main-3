@@ -208,107 +208,106 @@ export default function MasterIndex() {
 					setImportData={setImportData}
 				/>
 			) : null}
-			{datasHeader ? (
-				<div
-					className={cn(
-						'flex h-[90%] min-h-72 flex-col gap-2 rounded-md bg-muted p-3 text-muted-foreground',
+			<div
+				className={cn(
+					'hidden h-[90%] min-h-0 flex-col gap-2 rounded-md bg-muted p-3 text-muted-foreground',
+					datasHeader && 'flex',
+				)}
+			>
+				<div className="flex w-full items-center">
+					{rows.length ? (
+						<Button
+							variant="destructive"
+							className="h-full gap-1.5 rounded-sm py-2.5"
+							onClick={() => setShowDelete(true)}
+						>
+							<Icon name="trash" />
+							Delete All
+						</Button>
+					) : (
+						<FilterTabs filters={filters} name={name} />
 					)}
-				>
-					<div className="flex w-full items-center">
-						{rows.length ? (
-							<Button
-								variant="destructive"
-								className="h-full gap-1.5 rounded-sm py-2.5"
-								onClick={() => setShowDelete(true)}
-							>
-								<Icon name="trash" />
-								Delete All
-							</Button>
-						) : (
-							<FilterTabs filters={filters} name={name} />
-						)}
-						<div className="flex w-full items-center justify-end gap-2">
-							<Link
-								to="upsert"
-								className={buttonVariants({
-									variant: 'secondary',
-									className: 'h-full gap-1.5 rounded-sm py-2.5',
-								})}
-							>
-								<Icon name="plus-circled" />
-								Add {routeName}
-							</Link>
-							{importExportEnabled.includes(name) && isDocument ? (
-								<>
-									{' '}
-									<CSVReader
-										key={name}
-										onUploadAccepted={(results: any) => {
-											setImportData(results.data)
-										}}
-									>
-										{({ getRootProps }: any) => (
-											<Button
-												{...getRootProps()}
-												variant="accent"
-												className="h-full gap-2 rounded-sm px-3 py-2.5"
-											>
-												<Icon name="import" />
-												Import
-											</Button>
-										)}
-									</CSVReader>
-									<Button
-										variant="accent"
-										className="h-full gap-2 rounded-sm px-3 py-2.5"
-										onMouseEnter={() => {
-											searchParams.set('export', 'true')
-											setSearchParams(searchParams)
-										}}
-										onFocus={() => {
-											searchParams.set('export', 'true')
-											setSearchParams(searchParams)
-										}}
-									>
-										<CSVDownloader
-											className="flex items-center gap-2"
-											filename={name}
-											data={flattenData}
+					<div className="flex w-full items-center justify-end gap-2">
+						<Link
+							to="upsert"
+							className={buttonVariants({
+								variant: 'secondary',
+								className: 'h-full gap-1.5 rounded-sm py-2.5',
+							})}
+						>
+							<Icon name="plus-circled" />
+							Add {routeName}
+						</Link>
+						{importExportEnabled.includes(name) && isDocument ? (
+							<>
+								{' '}
+								<CSVReader
+									key={name}
+									onUploadAccepted={(results: any) => {
+										setImportData(results.data)
+									}}
+								>
+									{({ getRootProps }: any) => (
+										<Button
+											{...getRootProps()}
+											variant="accent"
+											className="h-full gap-2 rounded-sm px-3 py-2.5"
 										>
-											<Icon name="export" />
-											Export
-										</CSVDownloader>
-									</Button>
-								</>
-							) : null}
-						</div>
-					</div>
-					<DataTable
-						rowSelection={rowSelection}
-						setRowSelection={setRowSelection}
-						setRows={setRows}
-						columns={columns({
-							headers: datasHeader,
-							name: name,
-							singleRoute: routeName,
-							length: 40,
-							page: parseInt(page),
-						})}
-						data={data as any}
-						className="flex-1"
-					/>
-					<Form method="POST" action={`/filters/${name}`}>
-						{filters ? (
-							<input
-								type="hidden"
-								name="all-filters"
-								value={filters.join('--')}
-							/>
+											<Icon name="import" />
+											Import
+										</Button>
+									)}
+								</CSVReader>
+								<Button
+									variant="accent"
+									className="h-full gap-2 rounded-sm px-3 py-2.5"
+									onMouseEnter={() => {
+										searchParams.set('export', 'true')
+										setSearchParams(searchParams)
+									}}
+									onFocus={() => {
+										searchParams.set('export', 'true')
+										setSearchParams(searchParams)
+									}}
+								>
+									<CSVDownloader
+										className="flex items-center gap-2"
+										filename={name}
+										data={flattenData}
+									>
+										<Icon name="export" />
+										Export
+									</CSVDownloader>
+								</Button>
+							</>
 						) : null}
-						<PaginationButtons page={page} count={count} />
-					</Form>
+					</div>
 				</div>
-			) : null}
+				<DataTable
+					rowSelection={rowSelection}
+					setRowSelection={setRowSelection}
+					setRows={setRows}
+					columns={columns({
+						headers: datasHeader!,
+						name: name,
+						singleRoute: routeName,
+						length: 40,
+						page: parseInt(page),
+					})}
+					data={data as any}
+					className={!datasHeader ? 'hidden' : 'flex-1'}
+				/>
+				<Form method="POST" action={`/filters/${name}`}>
+					{filters ? (
+						<input
+							type="hidden"
+							name="all-filters"
+							value={filters.join('--')}
+						/>
+					) : null}
+					<PaginationButtons page={page} count={count} />
+				</Form>
+			</div>
 		</div>
 	)
 }
