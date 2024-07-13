@@ -59,7 +59,7 @@ export function DataTable<TData>({
 	return (
 		<div
 			className={cn(
-				'no-scrollbar relative z-20 max-h-full min-w-full overflow-scroll rounded-md',
+				'no-scrollbar relative z-20 min-w-full overflow-scroll rounded-md',
 				className,
 			)}
 		>
