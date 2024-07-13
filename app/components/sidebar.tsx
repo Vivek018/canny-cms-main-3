@@ -40,7 +40,7 @@ export function Sidebar({ className, theme, sidebar }: SidebarProps) {
 	return (
 		<aside
 			className={cn(
-				'flex h-full w-56 flex-col gap-3 overflow-hidden border-2 border-blue-400 bg-muted text-muted-foreground transition-[width]',
+				'flex h-full w-56 flex-col gap-3 overflow-hidden bg-muted text-muted-foreground transition-[width]',
 				'max-lg:w-[68px]',
 				className,
 				open && 'w-[68px]',

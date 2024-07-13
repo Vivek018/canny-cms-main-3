@@ -93,7 +93,7 @@ function App() {
 	const theme = useTheme()
 	return (
 		<Document nonce={nonce} theme={theme}>
-			<main className="flex h-full w-full border-2 border-green-400 bg-background text-foreground ">
+			<main className="flex h-full w-full bg-background text-foreground ">
 				<Sidebar
 					className="flex-none"
 					theme={initTheme ?? 'system'}
