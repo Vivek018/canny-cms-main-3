@@ -3,7 +3,7 @@ import { type NavList } from 'types'
 export const defaultMonth = (new Date().getMonth() + 1).toString()
 export const defaultYear = new Date().getFullYear().toString()
 
-export const PAGE_SIZE = 13
+export const PAGE_SIZE = 5
 export const MAX_DATA_LENGTH = 400
 
 export const sideNavList = [
