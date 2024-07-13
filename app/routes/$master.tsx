@@ -210,7 +210,7 @@ export default function MasterIndex() {
 			) : null}
 			<div
 				className={cn(
-					'flex-0 hidden h-[90%] min-h-72 flex-col gap-2 rounded-md bg-muted p-3 text-muted-foreground',
+					'flex-0 hidden max-h-[50%] min-h-72 flex-col gap-2 rounded-md bg-muted p-3 text-muted-foreground',
 					datasHeader && 'flex',
 				)}
 			>
