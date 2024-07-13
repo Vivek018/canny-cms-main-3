@@ -10,20 +10,20 @@ type FilterTabsProps = {
 export function FilterTabs({ filters = [], name }: FilterTabsProps) {
 	return (
 		<div className={cn('flex max-w-[55%] items-center justify-start gap-2')}>
-			<div className="no-scrollbar flex max-w-full gap-1.5 overflow-x-scroll">
+			<div className="no-scrollbar flex min-w-max gap-1.5 overflow-x-scroll">
 				{filters?.map(filter => (
 					<div key={filter} className="group relative">
 						<div
 							key={filter}
 							className={cn(
-								'flex min-w-max items-center gap-2 overflow-clip rounded-sm bg-background p-1.5 text-xs leading-3 tracking-tight text-muted-foreground shadow-sm',
+								'flex min-w-max items-center gap-1.5 rounded-sm bg-background p-1.5 text-xs leading-3 tracking-tight text-muted-foreground shadow-sm',
 							)}
 						>
 							{textTruncate(filter, 26)}
 							<Form
 								method="POST"
 								action={`/filters/${name}`}
-								className={cn('flex max-h-min ')}
+								className={cn('flex max-h-min')}
 							>
 								<input
 									type="hidden"
