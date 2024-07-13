@@ -55,7 +55,7 @@ export function Modal({
 			</Link>
 			<div
 				className={cn(
-					'no-scrollbar z-40 max-h-full overflow-scroll border-[0.5px] border-muted-foreground/15 bg-background px-12 py-6 shadow-lg dark:bg-muted',
+					'no-scrollbar z-40 h-screen max-h-screen overflow-scroll border-[0.5px] border-muted-foreground/15 bg-background px-12 py-6 shadow-lg dark:bg-muted',
 					inMiddle ? 'h-min animate-pop rounded-md' : 'animate-slideInRight',
 					className,
 				)}

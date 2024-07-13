@@ -21,7 +21,7 @@ const config = {
 		extend: {
 			keyframes: {
 				slideInRight: {
-					'0%': { transform: 'translateX(25%)' },
+					'0%': { transform: 'translateX(10%)' },
 					'100%': { transform: 'translateX(0%)' },
 				},
 				pop: {
