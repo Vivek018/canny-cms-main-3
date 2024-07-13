@@ -18,7 +18,7 @@ export function Header({
 	return (
 		<header
 			className={cn(
-				'my-[7px] flex h-16 items-center justify-between gap-5',
+				'flex items-center justify-between gap-5 py-3.5',
 				className,
 				!title && 'gap-0',
 			)}
