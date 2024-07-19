@@ -1,5 +1,5 @@
 import { booleanArray, MAX_DATA_LENGTH, singleRouteName } from '@/constant'
-import { months } from '../misx'
+import { getYears, months } from '../misx'
 import { prisma } from './db.server'
 
 export const statesArray = [
@@ -58,7 +58,11 @@ export const education = [
 
 export const status = [{ value: 'active' }, { value: 'inactive' }]
 export const payment_field_type = [{ value: 'fixed' }, { value: 'percentage' }]
-export const value_type = [{ value: 'daily' }, { value: 'monthly' }]
+export const value_type = [
+	{ value: 'daily' },
+	{ value: 'monthly' },
+	{ value: 'overtime' },
+]
 export const skill_type = [
 	{ value: 'skilled' },
 	{ value: 'semi_skilled' },
@@ -82,15 +86,6 @@ export const belongsToArray = [
 	{ value: 'employee' },
 	{ value: 'vehicle' },
 ]
-
-export const getYears = (years = 35): { value: number }[] => {
-	const currentYear = new Date().getFullYear()
-	const yearsArray = []
-	for (let i = currentYear; i > currentYear - years; i--) {
-		yearsArray.push({ value: i })
-	}
-	return yearsArray
-}
 
 const paginationOption = {
 	take: MAX_DATA_LENGTH,
@@ -133,13 +128,12 @@ export const projects = async () =>
 		...paginationOption,
 	})
 
-export const project_locations = async (dependency?: string) =>
+export const project_locations = async () =>
 	await prisma.project_Location.findMany({
 		select: {
 			id: true,
-			city: true,
+			district: true,
 		},
-		where: dependency ? { project_id: dependency } : {},
 		...paginationOption,
 	})
 
@@ -149,7 +143,11 @@ export const employees = async (dependency?: string) =>
 			id: true,
 			full_name: true,
 		},
-		where: dependency ? { project_location: { project_id: dependency } } : {},
+		where: dependency
+			? {
+					project: { id: dependency },
+				}
+			: {},
 		...paginationOption,
 	})
 
@@ -159,7 +157,11 @@ export const vehicles = async (dependency?: string) =>
 			id: true,
 			number: true,
 		},
-		where: dependency ? { project_location: { project_id: dependency } } : {},
+		where: dependency
+			? {
+					project: { id: dependency },
+				}
+			: {},
 		...paginationOption,
 	})
 
@@ -179,12 +181,14 @@ export const getFilterList = (master: string) => {
 			role: await user_roles(),
 			company: await companies(),
 			project: await projects(),
+			project_location: await project_locations(),
 			last_signed_in: '',
 		}),
 		documents: async () => ({
 			belongs_to: belongsToArray,
 			company: await companies(),
 			project: await projects(),
+			project_location: await project_locations(),
 			vehicle: await vehicles(),
 		}),
 		companies: async () => ({
@@ -193,8 +197,10 @@ export const getFilterList = (master: string) => {
 		}),
 		employees: async () => ({
 			status: status,
+			skill_type: skill_type,
 			company: await companies(),
 			project: await projects(),
+			project_location: await project_locations(),
 		}),
 		attendances: async () => ({
 			month: months,
@@ -203,12 +209,16 @@ export const getFilterList = (master: string) => {
 		advances: async () => ({
 			company: await companies(),
 			project: await projects(),
+			project_location: await project_locations(),
 			user: await users(),
 			credited: booleanArray,
 		}),
-		payment_fields: () => ({
-			type: payment_field_type,
-			value_type: value_type,
+		payment_fields: async () => ({
+			is_deduction: booleanArray,
+			service_charge_field: booleanArray,
+			company: await companies(),
+			project: await projects(),
+			project_location: await project_locations(),
 		}),
 		projects: async () => ({
 			company: await companies(),
@@ -220,17 +230,19 @@ export const getFilterList = (master: string) => {
 		vehicles: async () => ({
 			type: vehicleTypeArray,
 			status: status,
+			company: await companies(),
 			project: await projects(),
+			project_location: await project_locations(),
 		}),
 	}
 	return fitlerArray[master as keyof typeof fitlerArray]
 }
 
 export const inputList: { [key: string]: any } = {
-	[singleRouteName.users]: async (dependency?: string) => {
+	[singleRouteName.users]: async () => {
 		const roles = await user_roles()
 		const projectList = await projects()
-		const locations = await project_locations(dependency)
+		const locations = await project_locations()
 		const companyList = await companies()
 		return {
 			role: roles,
@@ -239,10 +251,10 @@ export const inputList: { [key: string]: any } = {
 			company: companyList,
 		}
 	},
-	[singleRouteName.documents]: async (dependency?: string) => {
+	[singleRouteName.documents]: async (dependency: string) => {
 		const companyList = await companies()
 		const projectList = await projects()
-		const locations = await project_locations(dependency)
+		const locations = await project_locations()
 		const employeeList = await employees(dependency)
 		const vehicleList = await vehicles(dependency)
 		return {
@@ -254,10 +266,12 @@ export const inputList: { [key: string]: any } = {
 			vehicle: vehicleList,
 		}
 	},
-	[singleRouteName.employees]: async (dependency: string) => {
+	[singleRouteName.employees]: async () => {
+		const companyList = await companies()
 		const projectList = await projects()
-		const projectLocationList = await project_locations(dependency)
+		const projectLocationList = await project_locations()
 		return {
+			company: companyList,
 			project: projectList,
 			project_location: projectLocationList,
 			skill_type: skill_type,
@@ -266,7 +280,7 @@ export const inputList: { [key: string]: any } = {
 			education: education,
 		}
 	},
-	[singleRouteName.advances]: async (dependency?: string) => {
+	[singleRouteName.advances]: async (dependency: string) => {
 		const userList = await users()
 		const projectList = await projects()
 		const employeeList = await employees(dependency)
@@ -292,31 +306,30 @@ export const inputList: { [key: string]: any } = {
 			payment_field: paymentFieldList,
 		}
 	},
-	[singleRouteName.payment_fields]: async (dependency?: string) => {
-		const projectList = await projects()
-		const projectLocationList = await project_locations(dependency)
+	[singleRouteName.payment_fields]: async () => {
+		const projectLocationList = await project_locations()
+		const paymentFieldList = await payment_fields()
 		return {
-			project: projectList,
 			project_location: projectLocationList,
-			skill_type: [...skill_type, { value: 'all' }],
-			type: payment_field_type,
-			value_type: value_type,
+			percentage_of: paymentFieldList,
 			is_deduction: booleanArray,
 			service_charge_field: booleanArray,
-			percentage_of: await payment_fields(),
 		}
 	},
-	[singleRouteName.vehicles]: async (dependency?: string) => {
+	[singleRouteName.vehicles]: async (dependency: string) => {
 		const employees = await prisma.employee.findMany({
 			select: { id: true, full_name: true },
 			where: {
 				designation: { contains: 'driver' },
+				project: dependency ? { id: dependency } : {},
 			},
-			take: 300,
+			take: MAX_DATA_LENGTH,
 		})
+		const companyList = await companies()
 		const projectList = await projects()
-		const projectLocationList = await project_locations(dependency)
+		const projectLocationList = await project_locations()
 		return {
+			company: companyList,
 			project: projectList,
 			project_location: projectLocationList,
 			type: vehicleTypeArray,
@@ -325,8 +338,26 @@ export const inputList: { [key: string]: any } = {
 			employee: employees,
 		}
 	},
+	value: async () => {
+		const paymentFieldList = await payment_fields()
+    const companyList = await companies()
+		const projectList = await projects()
+		return {
+			type: payment_field_type,
+			value_type: value_type,
+			skill_type: [...skill_type, { value: 'all' }],
+			month: months,
+			year: getYears(),
+			payment_field: paymentFieldList,
+			company: companyList,
+			project: projectList,
+		}
+	},
 }
 
 export const tabList: { [key: string]: any } = {
+	[singleRouteName.employees]: ['payment_data'],
+	[singleRouteName.companies]: ['attendance', 'payment_data'],
+	[singleRouteName.projects]: ['attendance', 'payment_data'],
 	[singleRouteName.project_locations]: ['attendance', 'payment_data'],
 }

@@ -3,26 +3,29 @@ import {
 	json,
 	type LoaderFunctionArgs,
 } from '@remix-run/node'
-import {
-	Form,
-	redirect,
-	useLoaderData,
-	useSearchParams,
-} from '@remix-run/react'
+import { Form, useLoaderData, useSearchParams } from '@remix-run/react'
 import { useEffect, useState } from 'react'
 import { useCSVDownloader } from 'react-papaparse'
-import { DetailsSelector } from '@/components/filter-selector'
+import { ExtraFilter } from '@/components/extra-filter'
 import { PaymentDataForEmployeeList } from '@/components/page/payment-data/for-employee-list'
 import { PaymentDataForProjectLocationList } from '@/components/page/payment-data/for-project-location-list'
 import { Button } from '@/components/ui/button'
 import { Icon } from '@/components/ui/icon'
-import { defaultMonth, defaultYear, MAX_DATA_LENGTH } from '@/constant'
+import {
+	defaultMonth,
+	defaultYear,
+	MAX_DATA_LENGTH,
+	singleRouteName,
+	TAB_PAGE_SIZE,
+} from '@/constant'
 import { useIsDocument } from '@/utils/clients/is-document'
-import { cn, getYearsList, months, transformAttendance } from '@/utils/misx'
+import { useMouseEvent } from '@/utils/clients/mouse-event'
+import { cn, transformAttendance } from '@/utils/misx'
 import { getData } from '@/utils/servers/data.server'
 import { prisma } from '@/utils/servers/db.server'
+import { companies, projects } from '@/utils/servers/list.server'
+import { extraFilterAction } from '@/utils/servers/misx.server'
 
-const PAGE_SIZE = 10
 const name = 'payment_datas'
 
 export async function loader({
@@ -35,40 +38,118 @@ export async function loader({
 	getPaymentData?: boolean
 }) {
 	const url = new URL(request.url)
-	const month = url.searchParams.get('month') ?? defaultMonth
-	const year = url.searchParams.get('year') ?? defaultYear
-	const employee = url.searchParams.get('employee') ?? undefined
 	const master = params._master
 	const route = params.route
 
+	const page = url.searchParams.get('page') ?? '1'
+	const month = url.searchParams.get('month') ?? defaultMonth
+	const year = url.searchParams.get('year') ?? defaultYear
+	const employee = url.searchParams.get('employee') ?? undefined
+	const company_id = url.searchParams.get('company') ?? undefined
+	const project_id = url.searchParams.get('project') ?? undefined
 	let employee_id = master === 'employees' ? params.route : employee
 
-	let data = {}
+	let data = null
 	let count = 0
 	let exportData = null
-	const page = url.searchParams.get('page') ?? '1'
+	let companyList = null
+	let projectList = null
 
 	if (master === 'employees' || getPaymentData) {
-		data = await prisma.employee.findMany({
+		data = await prisma.employee.findFirst({
 			select: {
 				id: true,
+				skill_type: true,
+				company_id: true,
+				project_id: true,
 				attendance: {
 					select: {
 						present: true,
 						holiday: true,
 						no_of_hours: true,
 					},
+					where: {
+						date: {
+							gte: new Date(`${month}/1/${year}`),
+							lte: new Date(`${month}/31/${year}`),
+						},
+					},
 				},
 				project_location: {
 					select: {
 						payment_field: {
 							select: {
+								id: true,
 								name: true,
-								value: true,
-								value_type: true,
-								type: true,
+								is_deduction: true,
 								service_charge_field: true,
+								percentage_of: {
+									select: {
+										name: true,
+										is_deduction: true,
+										service_charge_field: true,
+										value: {
+											select: {
+												value: true,
+												max_value: true,
+												type: true,
+												value_type: true,
+												skill_type: true,
+												month: true,
+												year: true,
+												company: {
+													select: {
+														id: true,
+													},
+												},
+												project: {
+													select: {
+														id: true,
+													},
+												},
+											},
+											where: {
+												month: {
+													lte: parseInt(month),
+												},
+												year: {
+													lte: parseInt(year),
+												},
+											},
+										},
+									},
+								},
+								value: {
+									select: {
+										value: true,
+										max_value: true,
+										type: true,
+										value_type: true,
+										skill_type: true,
+										month: true,
+										year: true,
+										company: {
+											select: {
+												id: true,
+											},
+										},
+										project: {
+											select: {
+												id: true,
+											},
+										},
+									},
+									where: {
+										month: {
+											lte: parseInt(month),
+										},
+										year: {
+											lte: parseInt(year),
+										},
+									},
+								},
 							},
+							orderBy: { sort_index: 'asc' },
 						},
 					},
 				},
@@ -77,16 +158,29 @@ export async function loader({
 				id: employee_id,
 			},
 		})
-	} else if (master === 'project_locations') {
-		const { data: projectLocationData, count: projectLocationCount } =
+	} else {
+		if (master === 'project_locations' || master === 'projects') {
+			companyList = await companies()
+		}
+		if (master === 'project_locations') {
+			projectList = await projects()
+		}
+		const { data: paymentDataListData, count: paymentDataListCount } =
 			(await getData({
 				master: name,
 				url: request.url,
-				take: PAGE_SIZE,
-			})(month, year, route)) as any
+				take: TAB_PAGE_SIZE,
+			})(
+				month,
+				year,
+				route,
+				singleRouteName[master!],
+				company_id,
+				project_id,
+			)) as any
 
-		data = projectLocationData
-		count = projectLocationCount
+		data = paymentDataListData
+		count = paymentDataListCount
 
 		if (url.searchParams.get('export') === 'true') {
 			exportData = await prisma.employee.findMany({
@@ -108,7 +202,14 @@ export async function loader({
 						},
 					},
 				},
-				where: { project_location_id: projectLocationData.id },
+				where: {
+					[`${singleRouteName[master!].toLowerCase()}_id`]:
+						paymentDataListData.id,
+					AND: [
+						company_id ? { company_id: company_id } : {},
+						project_id ? { project_id: project_id } : {},
+					],
+				},
 				take: MAX_DATA_LENGTH * 2,
 			})
 		}
@@ -122,62 +223,44 @@ export async function loader({
 		page,
 		employees,
 		master,
-		route,
+		companyList,
+		projectList,
 		exportData,
 	})
 }
 
-export async function action({ request }: ActionFunctionArgs) {
-	const formData = await request.formData()
-	const url = new URL(request.url)
-	const month = formData.get('month')
-	const year = formData.get('year')
-
-	const first = formData.get('first')
-	const prev = formData.get('prev')
-	const next = formData.get('next')
-	const last = formData.get('last')
-
-	if (first === 'true') {
-		url.searchParams.set('page', '1')
-	} else if (prev) {
-		if (parseInt(prev.toString()) >= 1)
-			url.searchParams.set('page', prev.toString())
-	} else if (next) {
-		url.searchParams.set('page', next.toString())
-	} else if (last) {
-		url.searchParams.set('page', last.toString())
-	}
-
-	if (month && month !== '0' && month !== 'none') {
-		url.searchParams.set('month', month.toString())
-	}
-
-	if (year && year !== '0' && year !== 'none') {
-		url.searchParams.set('year', year.toString())
-	}
-
-	return redirect(url.toString())
+export async function action(args: ActionFunctionArgs) {
+	return extraFilterAction(args)
 }
 
 export default function IndexPaymentData() {
-	const { data, count, page, month, year, master, exportData }: any =
-		useLoaderData<typeof loader>()
-	const monthList = months
-	const yearList = getYearsList(2013, parseInt(defaultYear))
-
+	const {
+		data,
+		count,
+		page,
+		month,
+		year,
+		master,
+		companyList,
+		projectList,
+		exportData,
+	} = useLoaderData<typeof loader>()
 	const { CSVDownloader } = useCSVDownloader()
 
 	const [searchParam, setSearchParam] = useSearchParams()
+	const { handleMouseEnter, handleMouseLeave } = useMouseEvent({
+		searchParam,
+		setSearchParam,
+	})
 	const [flattenData, setFlattenData] = useState<any>(exportData)
 
 	const { isDocument } = useIsDocument()
 
-	let children = null
-
 	useEffect(() => {
 		setFlattenData(() => transformAttendance({ data: exportData, month, year }))
-	}, [searchParam, setSearchParam, exportData, master, year, month])
+	}, [exportData, year, month])
+
+	let children = null
 
 	if (master === 'employees') {
 		children = (
@@ -186,56 +269,34 @@ export default function IndexPaymentData() {
 				month={month}
 				year={year}
 				page={page}
-				count={count}
-				pageSize={PAGE_SIZE}
+				pageSize={TAB_PAGE_SIZE}
 			/>
 		)
-	} else if (master === 'project_locations') {
+	} else {
 		children = (
 			<PaymentDataForProjectLocationList
 				data={data}
 				month={month}
 				year={year}
 				page={page}
+				routeName={singleRouteName[master!]}
 				count={count}
-				pageSize={PAGE_SIZE}
+				pageSize={TAB_PAGE_SIZE}
 			/>
 		)
 	}
 
 	return (
-		<div className="flex flex-col">
-			<div className="mb-1 mt-3.5 flex justify-between gap-6">
+		<div className="flex h-full flex-col">
+			<div className="flex justify-between gap-6 pb-1 pt-3.5">
 				<Form method="POST" className="flex gap-2">
-					<DetailsSelector
-						label="value"
-						list={monthList}
-						name="month"
-						defaultValue={month}
-						onChange={(e: any) => {
-							searchParam.set('month', e.target.value)
-							setSearchParam(searchParam)
-						}}
-						noLabel={true}
-						noNone={true}
-						showLabel="label"
-						className="w-min"
-						triggerClassName="w-[130px]"
-					/>
-					<DetailsSelector
-						label="label"
-						list={yearList}
-						name="year"
-						defaultValue={year}
-						onChange={(e: any) => {
-							searchParam.set('year', e.target.value)
-							setSearchParam(searchParam)
-						}}
-						noLabel={true}
-						noNone={true}
-						showLabel="label"
-						className="w-min"
-						triggerClassName="w-22"
+					<ExtraFilter
+						companyList={companyList}
+						projectList={projectList}
+						month={month}
+						year={year}
+            searchParam={searchParam}
+            setSearchParam={setSearchParam}
 					/>
 					<Button
 						variant="secondary"
@@ -246,27 +307,27 @@ export default function IndexPaymentData() {
 				</Form>
 				<div className="flex items-center gap-2">
 					{master !== 'employees' && isDocument ? (
-						<Button
-							variant="accent"
-							className="h-full gap-2 rounded-sm px-3"
-							onMouseEnter={() => {
-								searchParam.set('export', 'true')
-								setSearchParam(searchParam)
-							}}
-							onFocus={() => {
-								searchParam.set('export', 'true')
-								setSearchParam(searchParam)
-							}}
-						>
-							<CSVDownloader
-								className="flex items-center gap-2"
-								filename={name}
-								data={flattenData}
+						<>
+							<Button
+								variant="accent"
+								className="h-full gap-2 rounded-sm px-3"
+								onMouseEnter={handleMouseEnter}
+								onMouseLeave={handleMouseLeave}
+								onFocus={() => {
+									searchParam.set('export', 'true')
+									setSearchParam(searchParam)
+								}}
 							>
-								<Icon name="export" />
-								Export
-							</CSVDownloader>
-						</Button>
+								<CSVDownloader
+									className="flex items-center gap-2"
+									filename={name}
+									data={flattenData}
+								>
+									<Icon name="export" />
+									Export
+								</CSVDownloader>
+							</Button>
+						</>
 					) : null}
 				</div>
 			</div>

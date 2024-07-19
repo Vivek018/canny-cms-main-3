@@ -18,10 +18,7 @@ import { Modal } from '@/components/modal'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { singleRouteName } from '@/constant'
 import { imageFieldName } from '@/utils/input-types'
-import {
-	getTitleName,
-	replaceUnderscore,
-} from '@/utils/misx'
+import { getTitleName, replaceUnderscore } from '@/utils/misx'
 import { getSelector } from '@/utils/schema'
 import { prisma } from '@/utils/servers/db.server'
 import { invariantResponse } from '@/utils/servers/misx.server'
@@ -75,7 +72,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
 	await prisma[routeName].delete({ where: { id } })
 
-	return redirect(`/${master}`)
+	return redirect(master !== 'value' ? `/${master}` : '/payment_fields')
 }
 
 export default function RouteDelete() {
@@ -113,11 +110,7 @@ export default function RouteDelete() {
 						No
 					</Link>
 
-					<Button
-						type="submit"
-						variant="destructive"
-						size="lg"
-					>
+					<Button type="submit" variant="destructive" size="lg">
 						Delete
 					</Button>
 				</div>

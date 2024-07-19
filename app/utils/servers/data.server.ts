@@ -1,4 +1,4 @@
-import { defaultMonth, PAGE_SIZE } from '@/constant'
+import { defaultMonth, defaultYear, PAGE_SIZE } from '@/constant'
 import { filters } from '../filters'
 import { prisma } from './db.server'
 
@@ -30,12 +30,14 @@ export const getData = ({
 	filterOption?: any
 }) => {
 	let filterCookies = new Map<string, string>()
-	filters[master as keyof typeof filters]().forEach(filter => {
-		filterCookies.set(
-			filter.name,
-			new URL(url).searchParams.get(filter.name)?.toString() ?? '',
-		)
-	})
+	if (filters[master as keyof typeof filters]) {
+		filters[master as keyof typeof filters]().forEach(filter => {
+			filterCookies.set(
+				filter.name,
+				new URL(url).searchParams.get(filter.name)?.toString() ?? '',
+			)
+		})
+	}
 
 	const search = filterCookies
 		.get('search')
@@ -43,8 +45,10 @@ export const getData = ({
 		.replaceAll(/[^a-zA-Z0-9\s]/g, '')
 	const user = filterCookies.get('user')
 	const project = filterCookies.get('project')
+	const project_location = filterCookies.get('project_location')
 	const company = filterCookies.get('company')
 	const status = filterCookies.get('status')
+	const skill_type = filterCookies.get('skill_type')
 	const page = parseInt(new URL(url).searchParams.get('page') ?? '1')
 
 	const paginationOption = {
@@ -55,7 +59,6 @@ export const getData = ({
 	const filtersOption = {
 		users: () => {
 			const user_role = filterCookies.get('role')
-			const sign_in = filterCookies.get('sign_in')
 			return {
 				where: {
 					...filterOption,
@@ -70,30 +73,7 @@ export const getData = ({
 											},
 										},
 										{ designation: { contains: search, mode: 'insensitive' } },
-										{
-											role: { name: { contains: search, mode: 'insensitive' } },
-										},
-										{
-											company: {
-												name: { contains: search, mode: 'insensitive' },
-											},
-										},
-										{
-											project: {
-												name: { contains: search, mode: 'insensitive' },
-											},
-										},
-										{
-											project_location: {
-												city: { contains: search, mode: 'insensitive' },
-											},
-										},
 									],
-								}
-							: {},
-						sign_in
-							? {
-									last_signed_in: { gte: new Date(sign_in) },
 								}
 							: {},
 						company
@@ -104,6 +84,13 @@ export const getData = ({
 						project
 							? {
 									project: { name: { equals: project, mode: 'insensitive' } },
+								}
+							: {},
+						project_location
+							? {
+									project_location: {
+										district: { equals: project_location, mode: 'insensitive' },
+									},
 								}
 							: {},
 						user_role
@@ -128,48 +115,14 @@ export const getData = ({
 									OR: [
 										{ label: { contains: search, mode: 'insensitive' } },
 										{
-											user: {
-												full_name: { contains: search, mode: 'insensitive' },
-											},
+											amount: { gte: parseInt(amount ?? '0') },
 										},
 										{
 											employee: {
 												full_name: { contains: search, mode: 'insensitive' },
-											},
-										},
-										{
-											employee: {
-												project_location: {
-													city: { contains: search, mode: 'insensitive' },
-												},
-											},
-										},
-										{
-											employee: {
-												project_location: {
-													project: {
-														name: { contains: search, mode: 'insensitive' },
-													},
-												},
-											},
-										},
-										{
-											employee: {
-												project_location: {
-													project: {
-														company: {
-															name: { contains: search, mode: 'insensitive' },
-														},
-													},
-												},
 											},
 										},
 									],
-								}
-							: {},
-						amount
-							? {
-									amount: { gte: parseInt(amount) },
 								}
 							: {},
 						user
@@ -180,12 +133,8 @@ export const getData = ({
 						company
 							? {
 									employee: {
-										project_location: {
-											project: {
-												company: {
-													name: { equals: company, mode: 'insensitive' },
-												},
-											},
+										company: {
+											name: { equals: company, mode: 'insensitive' },
 										},
 									},
 								}
@@ -193,9 +142,19 @@ export const getData = ({
 						project
 							? {
 									employee: {
+										project: {
+											name: { equals: project, mode: 'insensitive' },
+										},
+									},
+								}
+							: {},
+						project_location
+							? {
+									employee: {
 										project_location: {
-											project: {
-												name: { equals: project, mode: 'insensitive' },
+											district: {
+												equals: project_location,
+												mode: 'insensitive',
 											},
 										},
 									},
@@ -243,30 +202,21 @@ export const getData = ({
 											},
 										},
 										{
-											project_location: {
-												city: {
-													contains: search,
-													mode: 'insensitive',
-												},
+											uan_no: {
+												contains: search,
+												mode: 'insensitive',
 											},
 										},
 										{
-											project_location: {
-												project: {
-													name: {
-														contains: search,
-														mode: 'insensitive',
-													},
-												},
+											esic_id: {
+												contains: search,
+												mode: 'insensitive',
 											},
 										},
 										{
-											project_location: {
-												project: {
-													company: {
-														name: { contains: search, mode: 'insensitive' },
-													},
-												},
+											employee_code: {
+												contains: search,
+												mode: 'insensitive',
 											},
 										},
 									],
@@ -274,27 +224,33 @@ export const getData = ({
 							: {},
 						company
 							? {
-									project_location: {
-										project: {
-											company: {
-												name: { equals: company, mode: 'insensitive' },
-											},
-										},
+									company: {
+										name: { equals: company, mode: 'insensitive' },
 									},
 								}
 							: {},
 						project
 							? {
+									project: {
+										name: { equals: project, mode: 'insensitive' },
+									},
+								}
+							: {},
+						project_location
+							? {
 									project_location: {
-										project: {
-											name: { equals: project, mode: 'insensitive' },
-										},
+										district: { equals: project_location, mode: 'insensitive' },
 									},
 								}
 							: {},
 						status
 							? {
 									status: { equals: status },
+								}
+							: {},
+						skill_type
+							? {
+									status: { equals: skill_type },
 								}
 							: {},
 						joining_date
@@ -307,33 +263,13 @@ export const getData = ({
 			}
 		},
 		companies: () => {
-			const service_charge = filterCookies.get('service_charge')
-			const reimbursement_charge = filterCookies.get('reimbursement_charge')
 			return {
 				where: {
 					...filterOption,
 					AND: [
 						search
 							? {
-									OR: [
-										{ name: { contains: search, mode: 'insensitive' } },
-										{
-											service_charge_field: {
-												contains: search,
-												mode: 'insensitive',
-											},
-										},
-									],
-								}
-							: {},
-						service_charge
-							? {
-									service_charge: { gte: parseInt(service_charge) },
-								}
-							: {},
-						reimbursement_charge
-							? {
-									reimbursement_charge: { gte: parseInt(reimbursement_charge) },
+									OR: [{ name: { contains: search, mode: 'insensitive' } }],
 								}
 							: {},
 					],
@@ -348,19 +284,7 @@ export const getData = ({
 					AND: [
 						search
 							? {
-									OR: [
-										{ name: { contains: search, mode: 'insensitive' } },
-										{
-											company: {
-												name: { contains: search, mode: 'insensitive' },
-											},
-										},
-									],
-								}
-							: {},
-						company
-							? {
-									company: { name: { equals: company, mode: 'insensitive' } },
+									OR: [{ name: { contains: search, mode: 'insensitive' } }],
 								}
 							: {},
 						starting_date
@@ -381,20 +305,11 @@ export const getData = ({
 						search
 							? {
 									OR: [
+										{ district: { contains: search, mode: 'insensitive' } },
 										{ city: { contains: search, mode: 'insensitive' } },
-										{ state: { contains: search, mode: 'insensitive' } },
+										{ postal_code: { equals: parseInt(search) } },
 										{ esic_code: { contains: search, mode: 'insensitive' } },
-										{
-											project: {
-												name: { contains: search, mode: 'insensitive' },
-											},
-										},
 									],
-								}
-							: {},
-						project
-							? {
-									project: { name: { equals: project, mode: 'insensitive' } },
 								}
 							: {},
 						state
@@ -408,7 +323,6 @@ export const getData = ({
 		},
 		vehicles: () => {
 			const vehicle_type = filterCookies.get('type')
-			const kilometers = filterCookies.get('kilometers')
 			return {
 				where: {
 					...filterOption,
@@ -425,9 +339,7 @@ export const getData = ({
 										},
 										{
 											project_location: {
-												project: {
-													name: { contains: search, mode: 'insensitive' },
-												},
+												district: { contains: search, mode: 'insensitive' },
 											},
 										},
 									],
@@ -443,17 +355,24 @@ export const getData = ({
 									status: { equals: status },
 								}
 							: {},
-						kilometers
+						company
 							? {
-									kms_driven: { gte: parseInt(kilometers) },
+									company: {
+										name: { equals: company, mode: 'insensitive' },
+									},
 								}
 							: {},
 						project
 							? {
+									project: {
+										name: { equals: project, mode: 'insensitive' },
+									},
+								}
+							: {},
+						project_location
+							? {
 									project_location: {
-										project: {
-											name: { equals: project, mode: 'insensitive' },
-										},
+										district: { equals: project_location, mode: 'insensitive' },
 									},
 								}
 							: {},
@@ -473,30 +392,9 @@ export const getData = ({
 							? {
 									OR: [
 										{ label: { contains: search, mode: 'insensitive' } },
-										{ belongs_to: { contains: search, mode: 'insensitive' } },
-										{
-											project: {
-												name: { contains: search, mode: 'insensitive' },
-											},
-										},
-										{
-											project_location: {
-												city: { contains: search, mode: 'insensitive' },
-											},
-										},
-										{
-											company: {
-												name: { contains: search, mode: 'insensitive' },
-											},
-										},
 										{
 											employee: {
 												full_name: { contains: search, mode: 'insensitive' },
-											},
-										},
-										{
-											vehicle: {
-												number: { contains: search, mode: 'insensitive' },
 											},
 										},
 									],
@@ -512,6 +410,13 @@ export const getData = ({
 									created_at: { gte: new Date(uploadDate) },
 								}
 							: {},
+						company
+							? {
+									company: {
+										name: { equals: company, mode: 'insensitive' },
+									},
+								}
+							: {},
 						project
 							? {
 									project: {
@@ -519,10 +424,10 @@ export const getData = ({
 									},
 								}
 							: {},
-						company
+						project_location
 							? {
-									company: {
-										name: { equals: company, mode: 'insensitive' },
+									project_location: {
+										district: { equals: project_location, mode: 'insensitive' },
 									},
 								}
 							: {},
@@ -538,47 +443,48 @@ export const getData = ({
 			}
 		},
 		payment_fields: () => {
-			const value = filterCookies.get('value')
-			const type = filterCookies.get('type')
-			const value_type = filterCookies.get('value_type')
+			const is_deduction = filterCookies.get('is_deduction')
+			const service_charge_field = filterCookies.get('service_charge_field')
 			return {
 				where: {
 					...filterOption,
 					AND: [
-						value
-							? {
-									value: { gte: parseInt(value) },
-								}
-							: {},
-						type
-							? {
-									type: type,
-								}
-							: {},
-						value_type
-							? {
-									value_type: value_type,
-								}
-							: {},
 						search
 							? {
-									OR: [
-										{ name: { contains: search, mode: 'insensitive' } },
-										{
-											project_location: {
-												some: {
-													city: { contains: search, mode: 'insensitive' },
-												},
+									OR: [{ name: { contains: search, mode: 'insensitive' } }],
+								}
+							: {},
+						is_deduction
+							? {
+									is_deduction: {
+										equals: is_deduction === 'true' ? true : false,
+									},
+								}
+							: {},
+						service_charge_field
+							? {
+									service_charge_field: {
+										equals: service_charge_field === 'true' ? true : false,
+									},
+								}
+							: {},
+						project_location
+							? {
+									project_location: {
+										some: {
+											district: {
+												contains: project_location,
+												mode: 'insensitive',
 											},
 										},
-									],
+									},
 								}
 							: {},
 					],
 				},
 			}
 		},
-		attendances: ({ month, year }: any) => {
+		attendances: ({ month, year, company_id, project_id }: any) => {
 			return {
 				where: {
 					...filterOption,
@@ -595,11 +501,21 @@ export const getData = ({
 									],
 								}
 							: {},
+						company_id
+							? {
+									company_id: company_id,
+								}
+							: {},
+						project_id
+							? {
+									project_id: project_id,
+								}
+							: {},
 					],
 				},
 			}
 		},
-		payment_datas: ({ month, year }: any) => {
+		payment_datas: ({ month, year, company_id, project_id }: any) => {
 			return {
 				where: {
 					...filterOption,
@@ -614,6 +530,44 @@ export const getData = ({
 									OR: [
 										{ full_name: { contains: search, mode: 'insensitive' } },
 									],
+								}
+							: {},
+						company_id
+							? {
+									company_id: company_id,
+								}
+							: {},
+						project_id
+							? {
+									project_id: project_id,
+								}
+							: {},
+					],
+				},
+			}
+		},
+		value: ({ month, year, payment_field_id }: any) => {
+			return {
+				where: {
+					...filterOption,
+					AND: [
+						month
+							? {
+									month: {
+										lte: parseInt(month),
+									},
+								}
+							: {},
+						year
+							? {
+									year: {
+										lte: parseInt(year),
+									},
+								}
+							: {},
+						payment_field_id
+							? {
+									payment_field_id: payment_field_id,
 								}
 							: {},
 					],
@@ -635,7 +589,7 @@ export const getData = ({
 						role: { select: { name: true } },
 						company: { select: { name: true } },
 						project: { select: { name: true } },
-						project_location: { select: { city: true } },
+						project_location: { select: { district: true } },
 					},
 					...filtersOption[master as 'users'](),
 					...paginationOption,
@@ -654,7 +608,7 @@ export const getData = ({
 						path: true,
 						belongs_to: true,
 						project_location: {
-							select: { city: true },
+							select: { district: true },
 						},
 						project: {
 							select: { name: true },
@@ -684,11 +638,6 @@ export const getData = ({
 						id: true,
 						name: true,
 						email_suffix: true,
-						_count: {
-							select: {
-								project: true,
-							},
-						},
 					},
 					...filtersOption[master as 'companies'](),
 					...paginationOption,
@@ -710,19 +659,19 @@ export const getData = ({
 						joining_date: true,
 						status: true,
 						mobile: true,
+						company: {
+							select: {
+								name: true,
+							},
+						},
+						project: {
+							select: {
+								name: true,
+							},
+						},
 						project_location: {
 							select: {
-								city: true,
-								project: {
-									select: {
-										name: true,
-										company: {
-											select: {
-												name: true,
-											},
-										},
-									},
-								},
+								district: true,
 							},
 						},
 						date_of_birth: true,
@@ -751,19 +700,19 @@ export const getData = ({
 						employee: {
 							select: {
 								full_name: true,
+								company: {
+									select: {
+										name: true,
+									},
+								},
+								project: {
+									select: {
+										name: true,
+									},
+								},
 								project_location: {
 									select: {
-										city: true,
-										project: {
-											select: {
-												name: true,
-												company: {
-													select: {
-														name: true,
-													},
-												},
-											},
-										},
+										district: true,
 									},
 								},
 							},
@@ -784,10 +733,6 @@ export const getData = ({
 					select: {
 						id: true,
 						name: true,
-						type: true,
-						skill_type: true,
-						value: true,
-						value_type: true,
 						_count: {
 							select: {
 								project_location: true,
@@ -811,12 +756,6 @@ export const getData = ({
 						name: true,
 						starting_date: true,
 						ending_date: true,
-						company: { select: { name: true } },
-						_count: {
-							select: {
-								project_location: true,
-							},
-						},
 					},
 					...filtersOption[master as 'projects'](),
 					...paginationOption,
@@ -831,15 +770,13 @@ export const getData = ({
 				data: await prisma.project_Location.findMany({
 					select: {
 						id: true,
+						district: true,
 						city: true,
 						state: true,
 						postal_code: true,
 						esic_code: true,
-						project: { select: { name: true } },
 						_count: {
 							select: {
-								employee: true,
-								vehicle: true,
 								payment_field: true,
 							},
 						},
@@ -864,12 +801,19 @@ export const getData = ({
 						price: true,
 						kms_driven: true,
 						status: true,
+						company: {
+							select: {
+								name: true,
+							},
+						},
+						project: {
+							select: {
+								name: true,
+							},
+						},
 						project_location: {
 							select: {
-								city: true,
-								project: {
-									select: { name: true, company: { select: { name: true } } },
-								},
+								district: true,
 							},
 						},
 					},
@@ -883,11 +827,14 @@ export const getData = ({
 		},
 		attendances: async (
 			month = defaultMonth,
-			year = defaultMonth,
-			project_location_id = '',
+			year = defaultYear,
+			id = '',
+			routeName = 'project_Location',
+			company_id = '',
+			project_id = '',
 		) => {
 			return {
-				data: await prisma.project_Location.findFirst({
+				data: await prisma[routeName as 'company'].findFirst({
 					select: {
 						id: true,
 						employee: {
@@ -896,33 +843,42 @@ export const getData = ({
 								full_name: true,
 								designation: true,
 								joining_date: true,
-								_count: {
+								skill_type: true,
+								company: { select: { name: true } },
+								project: { select: { name: true } },
+								project_location: { select: { district: true } },
+								attendance: {
 									select: {
-										attendance: {
-											where: {
-												date: {
-													gte: new Date(`${month}/1/${year}`),
-													lte: new Date(`${month}/31/${year}`),
-												},
-												present: true,
-											},
+										present: true,
+										holiday: true,
+										no_of_hours: true,
+									},
+									where: {
+										date: {
+											gte: new Date(`${month}/1/${year}`),
+											lte: new Date(`${month}/31/${year}`),
 										},
 									},
 								},
 							},
 							...paginationOption,
-							...filtersOption[master as 'attendances']({ month, year }),
+							...filtersOption[master as 'attendances']({
+								month,
+								year,
+								company_id,
+								project_id,
+							}),
 						},
 					},
-					where: project_location_id
+					where: id
 						? {
-								id: project_location_id,
+								id: id,
 							}
 						: {},
 				}),
 				count:
 					(
-						await prisma.project_Location.findFirst({
+						await prisma[routeName as 'company'].findFirst({
 							select: {
 								_count: {
 									select: {
@@ -930,14 +886,16 @@ export const getData = ({
 											...filtersOption[master as 'attendances']({
 												month,
 												year,
+												company_id,
+												project_id,
 											}),
 										},
 									},
 								},
 							},
-							where: project_location_id
+							where: id
 								? {
-										id: project_location_id,
+										id: id,
 									}
 								: {},
 						})
@@ -946,42 +904,121 @@ export const getData = ({
 		},
 		payment_datas: async (
 			month = defaultMonth,
-			year = defaultMonth,
-			project_location_id = '',
+			year = defaultYear,
+			id = '',
+			routeName = 'project_Location',
+			company_id = '',
+			project_id = '',
 		) => {
 			return {
-				data: await prisma.project_Location.findFirst({
+				data: await prisma[routeName as 'company'].findFirst({
 					select: {
 						id: true,
-						payment_field: {
-							select: {
-								name: true,
-								value: true,
-								value_type: true,
-								type: true,
-								service_charge_field: true,
-							},
-							orderBy: { sort_index: 'asc' },
-						},
 						employee: {
 							select: {
+								id: true,
 								full_name: true,
 								designation: true,
 								joining_date: true,
+								skill_type: true,
+								company_id: true,
+								project_id: true,
+								company: { select: { name: true } },
+								project: { select: { name: true } },
+								project_location: {
+									select: {
+										district: true,
+										payment_field: {
+											select: {
+												name: true,
+												is_deduction: true,
+												service_charge_field: true,
+												percentage_of: {
+													select: {
+														name: true,
+														is_deduction: true,
+														service_charge_field: true,
+														value: {
+															select: {
+																value: true,
+																max_value: true,
+																type: true,
+																value_type: true,
+																skill_type: true,
+																month: true,
+																year: true,
+																company: { select: { id: true } },
+																project: { select: { id: true } },
+															},
+															where: {
+																month: {
+																	lte: parseInt(month),
+																},
+																year: {
+																	lte: parseInt(year),
+																},
+															},
+														},
+													},
+												},
+												value: {
+													select: {
+														value: true,
+														max_value: true,
+														type: true,
+														value_type: true,
+														skill_type: true,
+														month: true,
+														year: true,
+														company: { select: { id: true } },
+														project: { select: { id: true } },
+													},
+													where: {
+														month: {
+															lte: parseInt(month),
+														},
+														year: {
+															lte: parseInt(year),
+														},
+													},
+												},
+											},
+											orderBy: { sort_index: 'asc' },
+										},
+									},
+								},
+								attendance: {
+									select: {
+										no_of_hours: true,
+										present: true,
+										holiday: true,
+									},
+									where: {
+										date: {
+											gte: new Date(`${month}/1/${year}`),
+											lte: new Date(`${month}/31/${year}`),
+										},
+									},
+								},
 							},
 							...paginationOption,
-							...filtersOption[master as 'payment_datas']({ month, year }),
+							...filtersOption[master as 'payment_datas']({
+								month,
+								year,
+								company_id,
+								project_id,
+							}),
 						},
 					},
-					where: project_location_id
+					where: id
 						? {
-								id: project_location_id,
+								id: id,
 							}
 						: {},
 				}),
 				count:
 					(
-						await prisma.project_Location.findFirst({
+						await prisma[routeName as 'company'].findFirst({
 							select: {
 								_count: {
 									select: {
@@ -989,18 +1026,55 @@ export const getData = ({
 											...filtersOption[master as 'payment_datas']({
 												month,
 												year,
+												company_id,
+												project_id,
 											}),
 										},
 									},
 								},
 							},
-							where: project_location_id
+							where: id
 								? {
-										id: project_location_id,
+										id: id,
 									}
 								: {},
 						})
 					)?._count.employee ?? 0,
+			}
+		},
+		value: async (
+			month = defaultMonth,
+			year = defaultYear,
+			payment_field_id = '',
+		) => {
+			return {
+				data: await prisma.value.findMany({
+					select: {
+						id: true,
+						value: true,
+						max_value: true,
+						type: true,
+						value_type: true,
+						skill_type: true,
+						month: true,
+						year: true,
+						company: { select: { name: true } },
+						project: { select: { name: true } },
+						payment_field: { select: { name: true } },
+					},
+					...filtersOption[master as 'value']({
+						month,
+						year,
+						payment_field_id,
+					}),
+				}),
+				count: await prisma.value.count({
+					...filtersOption[master as 'value']({
+						month,
+						year,
+						payment_field_id,
+					}),
+				}),
 			}
 		},
 	}

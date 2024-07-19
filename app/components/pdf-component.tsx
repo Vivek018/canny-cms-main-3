@@ -1,7 +1,7 @@
 import { Document, Page, PDFViewer, Text, View } from '@react-pdf/renderer'
 import { useIsDocument } from '@/utils/clients/is-document'
 import { cn, replaceUnderscore } from '@/utils/misx'
-import { pdfTemplates, styles } from '@/utils/pdf-list.client'
+import { pdfTemplates, styles } from '@/utils/pdf-list'
 
 export const PDF = ({
 	type,

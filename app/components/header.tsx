@@ -18,7 +18,7 @@ export function Header({
 	return (
 		<header
 			className={cn(
-				'flex items-center justify-between gap-5 py-3.5',
+				'py-3.5 flex items-center justify-between gap-5',
 				className,
 				!title && 'gap-0',
 			)}
@@ -32,13 +32,11 @@ export function Header({
 						<Icon name="chevron-left" size="lg" />
 					</Link>
 				) : null}
-				<h1 className="w-max text-2xl font-bold capitalize tracking-wide">
+				<h1 className="text-2xl w-max font-bold capitalize tracking-wide">
 					{replaceUnderscore(title ?? '')}
 				</h1>
 			</div>
-			<div className="flex w-full items-center justify-end gap-3">
-				{children}
-			</div>
+			<div className="flex w-full items-center justify-end gap-3">{children}</div>
 		</header>
 	)
 }

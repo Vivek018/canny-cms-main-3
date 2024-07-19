@@ -21,7 +21,7 @@ export async function action({
 	connectMaster,
 }: ActionFunctionArgs & { connectMaster?: string }) {
 	const master = connectMaster ?? params.master ?? (params._master as string)
-	const routeName = singleRouteName[master] as 'user'
+	const routeName = (singleRouteName[master] ?? connectMaster) as 'user'
 	const Schema = Schemas[routeName]
 
 	const uploadHandler: UploadHandler = composeUploadHandlers(
@@ -75,20 +75,21 @@ export async function action({
 		? { [imageField]: submission.value[imageField] }
 		: {}
 
-	const isMulti: any = Object.values(inputTypes[routeName]).find(
+	const isMultis: any = Object.values(inputTypes[routeName]).filter(
 		(val: any) => val.isMulti,
 	)
-	let disconnectValues = null
+	let disconnectValues: any = {}
 
-	if (isMulti && submission.value.id) {
-		disconnectValues = await prisma[routeName].findFirst({
-			select: { [isMulti.name]: { select: { id: true } } },
-			where: { id: submission.value.id },
-		})
+	if (isMultis?.length && submission.value.id) {
+		for (let i = 0; i < isMultis.length; i++) {
+			disconnectValues[isMultis[i].name] = await prisma[routeName].findFirst({
+				select: { [isMultis[i].name]: { select: { id: true } } },
+				where: { id: submission.value.id },
+			})
+		}
 	}
 
-	const updatedData = await prisma[routeName].upsert({
-		select: { id: true },
+	await prisma[routeName].upsert({
 		where: { id: submission.value.id ?? `__new_${routeName}__` },
 		create: getSelectorValues(routeName, submission.value),
 		update: {
@@ -97,5 +98,12 @@ export async function action({
 		},
 	})
 
-	return redirect(`/${master}/${updatedData.id}`)
+	const url = request.url
+		.replaceAll('/update', '')
+		.replaceAll('/upsert', '')
+		.replaceAll('/add', '')
+		.replaceAll('/delete', '')
+		.replaceAll('/edit', '')
+
+	return redirect(url)
 }

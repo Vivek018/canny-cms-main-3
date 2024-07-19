@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/command'
 import { Icon } from '@/components/ui/icon'
 import { cn, replaceUnderscore } from '@/utils/misx'
-import { generateEnabledList } from '@/utils/pdf-list.client'
+import { generateEnabledList } from '@/utils/pdf-list'
 
 export async function loader({ params }: LoaderFunctionArgs) {
 	return json({ master: params._master!, route: params.route! })

@@ -34,6 +34,7 @@ import {
 	singleRouteName,
 } from '@/constant'
 import { useIsDocument } from '@/utils/clients/is-document'
+import { useMouseEvent } from '@/utils/clients/mouse-event'
 import {
 	cn,
 	flattenObject,
@@ -115,7 +116,7 @@ export default function MasterIndex() {
 
 	const { CSVDownloader } = useCSVDownloader()
 	const { CSVReader } = useCSVReader()
-	const [searchParams, setSearchParams] = useSearchParams()
+	const [searchParam, setSearchParam] = useSearchParams()
 	const { isDocument } = useIsDocument()
 
 	const [importData, setImportData] = useState<any>(null)
@@ -123,6 +124,10 @@ export default function MasterIndex() {
 	const [showDelete, setShowDelete] = useState(false)
 	const [rowSelection, setRowSelection] = useState({})
 	const [rows, setRows] = useState<any>([])
+	const { handleMouseEnter, handleMouseLeave } = useMouseEvent({
+		searchParam,
+		setSearchParam,
+	})
 
 	const datasHeader = data ? getTableHeaders(data, ['id', 'path']) : null
 
@@ -133,9 +138,12 @@ export default function MasterIndex() {
 
 		if (imported === 'true') {
 			setImportData(null)
-			searchParams.delete('imported')
-			setSearchParams(searchParams)
+			searchParam.delete('imported')
+			setSearchParam(searchParam)
 		}
+	}, [imported, searchParam, setSearchParam])
+
+	useEffect(() => {
 		if (exportData?.length) {
 			setFlattenData(
 				exportData?.map((item: any, index: number) => ({
@@ -144,7 +152,7 @@ export default function MasterIndex() {
 				})),
 			)
 		}
-	}, [imported, searchParams, setSearchParams, exportData])
+	}, [exportData])
 
 	const routeName = replaceUnderscore(
 		singleRouteName[name as keyof typeof singleRouteName],
@@ -210,7 +218,7 @@ export default function MasterIndex() {
 			) : null}
 			<div
 				className={cn(
-					'flex-0 hidden h-full max-h-full min-h-72 flex-col gap-2 rounded-md bg-muted  p-3 text-muted-foreground',
+					'flex-0 hidden h-full max-h-full min-h-72 flex-col gap-2 rounded-md bg-muted p-3 text-muted-foreground',
 					datasHeader && 'flex',
 				)}
 			>
@@ -261,13 +269,11 @@ export default function MasterIndex() {
 								<Button
 									variant="accent"
 									className="h-full gap-2 rounded-sm px-3 py-2.5"
-									onMouseEnter={() => {
-										searchParams.set('export', 'true')
-										setSearchParams(searchParams)
-									}}
+									onMouseEnter={handleMouseEnter}
+									onMouseLeave={handleMouseLeave}
 									onFocus={() => {
-										searchParams.set('export', 'true')
-										setSearchParams(searchParams)
+										searchParam.set('export', 'true')
+										setSearchParam(searchParam)
 									}}
 								>
 									<CSVDownloader

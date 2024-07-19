@@ -44,7 +44,7 @@ export const AttendanceGrid = ({ data, month, year }: AttendanceGridProps) => {
 					)
 				})}
 				{Array.from({ length: totalDays }).map((_, index) => {
-					const dateData = data.find(
+					const dateData = data?.find(
 						value => new Date(value.date).getDate() === index + 1,
 					)
 					return (
@@ -78,10 +78,18 @@ export const AttendanceGrid = ({ data, month, year }: AttendanceGridProps) => {
 									{dateData ? (dateData?.present ? 'Present' : 'Absent') : ''}
 								</p>
 							</div>
-							<div className="flex justify-between gap-0.5">
+							<div className="flex justify-between gap-0.5 text-sm">
 								<p>
 									Hours:{' '}
-									<span className="font-medium">
+									<span
+										className={cn(
+											'font-medium',
+											dateData?.no_of_hours !== undefined &&
+												(dateData?.no_of_hours < 8 ||
+													dateData?.no_of_hours > 8) &&
+												'rounded-sm bg-background px-1 py-0.5',
+										)}
+									>
 										{dateData?.no_of_hours ?? 'N/A'}
 									</span>
 								</p>
@@ -89,10 +97,6 @@ export const AttendanceGrid = ({ data, month, year }: AttendanceGridProps) => {
 									<span
 										className={cn(
 											'rounded-sm bg-accent p-1 text-[11px] font-medium capitalize',
-											(dateData?.holiday && dateData?.present) ||
-												(!dateData?.holiday && !dateData?.present)
-												? 'bg-foreground text-background'
-												: null,
 										)}
 									>
 										{dateData?.holiday === undefined

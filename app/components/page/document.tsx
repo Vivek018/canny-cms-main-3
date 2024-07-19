@@ -1,6 +1,7 @@
 import { Link } from '@remix-run/react'
 import { useMemo, useState } from 'react'
 import { pdfjs, Document, Page } from 'react-pdf'
+import { NO_IMAGE } from '@/constant'
 import { imageFieldName } from '@/utils/input-types'
 import { DetailsData } from '../details-data'
 
@@ -22,8 +23,8 @@ export function DocumentPage({
 	imageField,
 	routeName,
 }: DocumentProps) {
-	const noImage = '/no_image.jpeg'
-	const file = data[imageFieldName[routeName]] ?? noImage
+	const file = data[imageFieldName[routeName]] ?? NO_IMAGE
+	console.log(file)
 	const fileType = file?.split('.')[file.split('.').length - 1]
 
 	const options = useMemo(
@@ -44,15 +45,15 @@ export function DocumentPage({
 		</div>
 	)
 
-	if (['png', 'jpeg', 'jpg', 'webp'].includes(fileType)) {
+	if (['png', 'jpeg', 'jpg', 'webp'].includes(fileType.toLowerCase())) {
 		children = (
 			<img
 				className="h-full object-contain"
-				src={file ?? noImage}
+				src={file ?? NO_IMAGE}
 				alt={data.label}
 			/>
 		)
-	} else if (['pdf'].includes(fileType)) {
+	} else if (['pdf'].includes(fileType.toLowerCase())) {
 		children = (
 			<Document
 				file={file}
@@ -75,7 +76,7 @@ export function DocumentPage({
 				className="my-8 flex"
 			/>
 			<div className="grid h-full w-full place-items-center overflow-scroll rounded-md border border-gray-300">
-				{file && file !== noImage ? (
+				{file && file !== NO_IMAGE ? (
 					<Link
 						className="grid h-full w-full place-items-center hover:bg-accent/80 hover:opacity-80 dark:opacity-70"
 						to={file}

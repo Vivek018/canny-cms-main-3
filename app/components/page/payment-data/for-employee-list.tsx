@@ -1,4 +1,4 @@
-import { getTableHeaders, transformPaymentData } from '@/utils/misx'
+import { getTableHeaders, months, transformPaymentData } from '@/utils/misx'
 import { columns } from '../../columns'
 import { DataTable } from '../../data-table'
 
@@ -7,7 +7,6 @@ type AttendanceListProps = {
 	month: string
 	year: string
 	page: string
-	count: number
 	pageSize: number
 }
 
@@ -16,17 +15,29 @@ export const PaymentDataForEmployeeList = ({
 	month,
 	year,
 	page,
-	count,
 	pageSize,
 }: AttendanceListProps) => {
-	const employeeData = data[0].project_location.payment_field?.map(
+	const employeeData = data.project_location.payment_field?.map(
 		(payment_field: any) => ({
+			id: payment_field.id,
 			name: payment_field.name,
-			value: transformPaymentData(payment_field),
+			month: months.find(m => m.value === month)?.label,
+			year,
+			value: transformPaymentData({
+				attendance: data.attendance,
+				payment_field: payment_field,
+				employee: {
+					company_id: data.company_id,
+					project_id: data.project_id,
+					skill_type: data.skill_type,
+				},
+			}),
 		}),
 	)
 
-	const datasHeader = employeeData ? getTableHeaders(employeeData, ['id']) : []
+	const datasHeader = employeeData
+		? getTableHeaders(employeeData, ['id', 'company_id', 'project_id'])
+		: []
 
 	return (
 		<div>
@@ -34,14 +45,13 @@ export const PaymentDataForEmployeeList = ({
 				setRows={() => {}}
 				columns={columns({
 					headers: datasHeader,
-					name: 'employees',
-					singleRoute: 'employee',
+					name: 'payment_fields',
+					singleRoute: 'payment_Field',
 					length: 40,
-					extraRoute: 'attendance',
 					page: parseInt(page),
 					pageSize: pageSize,
-					updateLink: `update?month=${month}&year=${year}`,
 					noSelect: true,
+					noActions: true,
 				})}
 				data={employeeData as any}
 			/>

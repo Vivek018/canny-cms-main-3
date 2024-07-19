@@ -1,5 +1,36 @@
 import { faker } from '@faker-js/faker'
+import { NORMAL_DAY_HOURS } from '@/constant'
 import { statesArray, vehicleTypeArray } from './servers/list.server'
+
+export const paymentFields = [
+	{
+		name: 'BASIC',
+	},
+	{
+		name: 'FIXED ALLOWANCE',
+	},
+	{
+		name: 'OVERTIME ALLOWANCE',
+	},
+	{
+		name: 'PF',
+	},
+	{
+		name: 'ESIC',
+	},
+	{
+		name: 'BONUS',
+	},
+	{
+		name: 'PT',
+	},
+	{
+		name: 'HRA',
+	},
+	{
+		name: 'OTHERS',
+	},
+]
 
 const educationArray = [
 	'10th',
@@ -13,9 +44,7 @@ const educationArray = [
 const statusArray = ['active', 'inactive']
 
 const booleanArray = [true, false]
-const typeArray = ['String', 'Number', 'Boolean']
-
-const paymentFieldType = ['fixed', 'percentage']
+// const typeArray = ['String', 'Number', 'Boolean']
 
 const randomNumber = (min: number, max: number) => {
 	return Math.floor(Math.random() * (max - min + 1) + min)
@@ -61,7 +90,7 @@ export function createProject() {
 
 export function createProjectLocation() {
 	return {
-		street_address: faker.location.streetAddress(),
+		district: faker.location.street(),
 		city: faker.location.city(),
 		state: statesArray[Math.floor(Math.random() * statesArray.length)].value,
 		postal_code: faker.number.int({ max: 999999 }),
@@ -99,49 +128,6 @@ export function createUserRoles() {
 	]
 }
 
-export function createPaymentFields() {
-	return [
-		{
-			name: 'BASIC',
-			type: paymentFieldType[0],
-		},
-		{
-			name: 'FIXED ALLOWANCE',
-			type: paymentFieldType[0],
-		},
-		{
-			name: 'OVERTIME ALLOWANCE',
-			type: paymentFieldType[0],
-		},
-		{
-			name: 'PF',
-			type: paymentFieldType[1],
-			value: 12,
-		},
-		{
-			name: 'ESIC',
-			type: paymentFieldType[1],
-			value: 3.75,
-		},
-		{
-			name: 'BONUS',
-			type: paymentFieldType[1],
-			value: 8.33,
-		},
-		{
-			name: 'PT',
-			type: paymentFieldType[0],
-		},
-		{
-			name: 'HRA',
-			type: paymentFieldType[0],
-		},
-		{
-			name: 'OTHERS',
-			type: paymentFieldType[0],
-		},
-	]
-}
 
 export function createUser() {
 	return {
@@ -162,7 +148,7 @@ export function createBankDetails() {
 export function createAttendance() {
 	return {
 		date: faker.date.past(),
-		no_of_hours: randomNumber(0, 8),
+		no_of_hours: randomNumber(0, NORMAL_DAY_HOURS),
 		present: booleanArray[Math.floor(Math.random() * booleanArray.length)],
 		holiday: booleanArray[Math.floor(Math.random() * booleanArray.length)],
 	}
@@ -172,8 +158,6 @@ export function createPaymentField() {
 	return {
 		name: faker.finance.transactionType(),
 		description: faker.lorem.sentence(),
-		type: typeArray[Math.floor(Math.random() * typeArray.length)],
-		value: parseInt(faker.finance.amount()),
 	}
 }
 

@@ -12,7 +12,7 @@ import { PaginationButtons } from '@/components/pagination-buttons'
 import { SearchBar } from '@/components/search-bar'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Icon } from '@/components/ui/icon'
-import { singleRouteName } from '@/constant'
+import { singleRouteName, TAB_PAGE_SIZE } from '@/constant'
 import { inputTypes } from '@/utils/input-types'
 import {
 	capitalizeAfterUnderscore,
@@ -22,8 +22,6 @@ import {
 } from '@/utils/misx'
 import { getData } from '@/utils/servers/data.server'
 import { prisma } from '@/utils/servers/db.server'
-
-export const TAB_PAGE_SIZE = 10
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
 	const normalTab = params.tab ?? ''
@@ -117,7 +115,7 @@ export default function Tab() {
 	const [rowSelection, setRowSelection] = useState({})
 	const [rows, setRows] = useState<any>()
 
-	const datasHeader = data ? getTableHeaders(data, ['id']) : null
+	const datasHeader = data ? getTableHeaders(data, ['id', singleRouteName[name!]]) : null
 
 	useEffect(() => {
 		setRowSelection({})
@@ -126,7 +124,7 @@ export default function Tab() {
 	}, [page])
 
 	return (
-		<div className="pt-3">
+		<div className="h-full pt-3">
 			<Modal
 				link={`/${name}/${route}/${normalTab?.toLowerCase()}`}
 				modalClassName={cn(!showDelete && 'hidden')}
@@ -168,7 +166,7 @@ export default function Tab() {
 				</Form>
 			</Modal>
 			{datasHeader ? (
-				<div className="w-full">
+				<div className="flex h-full w-full flex-col">
 					<div className="flex items-center gap-2">
 						<Button
 							variant="destructive"
@@ -195,7 +193,7 @@ export default function Tab() {
 							</Link>
 						</Form>
 					</div>
-					<div>
+					<div className="max-h-full flex-1">
 						<DataTable
 							rowSelection={rowSelection}
 							setRowSelection={setRowSelection}

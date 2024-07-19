@@ -2,7 +2,9 @@ import { PrismaClient } from '@prisma/client'
 import chalk from 'chalk'
 
 export function remember<Value>(name: string, getValue: () => Value) {
-	const thusly: any = globalThis
+	const thusly = globalThis as typeof globalThis & {
+		__remember?: Map<string, Value>
+	}
 	thusly.__remember ??= new Map()
 	if (!thusly.__remember.has(name)) {
 		thusly.__remember.set(name, getValue())
@@ -21,7 +23,7 @@ export const prisma = remember('prisma', () => {
 		],
 	})
 
-	client.$on('query', async (e: any) => {
+	client.$on('query', async e => {
 		if (e.duration < logThreshold) return
 		const color =
 			e.duration < logThreshold * 1.1

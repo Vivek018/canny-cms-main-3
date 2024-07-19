@@ -1,5 +1,5 @@
 import { Form } from '@remix-run/react'
-import { cn, replaceUnderscore, textTruncate } from '@/utils/misx'
+import { cn, replaceUnderscore } from '@/utils/misx'
 import { Modal } from './modal'
 import { Button } from './ui/button'
 import { Icon } from './ui/icon'
@@ -16,7 +16,7 @@ type ImportDataProps = {
 	master: string
 	header: string[]
 	body: string[][]
-  action?: string
+	action?: string
 	setImportData: any
 }
 
@@ -24,7 +24,7 @@ export function ImportData({
 	master,
 	header,
 	body,
-  action,
+	action,
 	setImportData,
 }: ImportDataProps) {
 	return (
@@ -35,10 +35,12 @@ export function ImportData({
 			className={cn(
 				'my-10 flex max-h-[700px] max-w-[80%] flex-col gap-2 overflow-scroll rounded-md bg-muted p-4 text-muted-foreground',
 			)}
-      shouldNotNavigate
+			shouldNotNavigate
 		>
 			<div className="flex h-full w-full items-center justify-between gap-2 py-1">
-				<h1 className='font-semibold text-lg tracking-wide'>Total Entries: {body?.length ?? 0}</h1>
+				<h1 className="text-lg font-semibold tracking-wide">
+					Total Entries: {body?.length ?? 0}
+				</h1>
 				<div className="flex items-center gap-2">
 					<Button
 						variant="accent"
@@ -71,9 +73,9 @@ export function ImportData({
 								return (
 									<TableHead
 										key={value + index}
-										className="h-max w-max py-3 capitalize"
+										className="h-max w-max truncate py-3 capitalize"
 									>
-										{textTruncate(replaceUnderscore(value), 17)}
+										{replaceUnderscore(value)}
 									</TableHead>
 								)
 							})}

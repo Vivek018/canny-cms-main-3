@@ -35,7 +35,7 @@ import { inputTypes } from '@/utils/input-types'
 import { dateConvertForInput, replaceUnderscore } from '@/utils/misx'
 import { getSelectorKeys, Schemas } from '@/utils/schema'
 import { inputList } from '@/utils/servers/list.server'
-import { action as upsertAction } from './_actions+/$master.upsert'
+import { action as upsertAction } from './_actions+/$master+/upsert'
 
 export async function loader({
 	request,
@@ -118,6 +118,7 @@ export default function UpsertUser({
 				<div className="flex w-full items-center gap-2 pb-6 pt-2">
 					<Link
 						to={goBackLink}
+						replace={true}
 						className="grid h-full place-items-center rounded-sm px-1.5 py-1 hover:bg-accent"
 					>
 						<Icon name="chevron-left" size="md" />
@@ -140,6 +141,7 @@ export default function UpsertUser({
 						const dependsValue = inputTypeValue?.dependsValue
 						const type = inputTypeValue?.type
 						const label = type && inputTypeValue?.label
+						const showLabel = type && inputTypeValue?.showLabel
 						const name = type && inputTypeValue?.name
 						const isMulti = type && inputTypeValue?.isMulti
 						const connectOn = inputTypeValue?.connectOn
@@ -234,6 +236,7 @@ export default function UpsertUser({
 								<RadioField
 									key={fields[value].key ?? index}
 									label={label}
+									showLabel={showLabel}
 									name={name}
 									list={
 										dependStateValue && dependStateValue[name]
@@ -274,6 +277,7 @@ export default function UpsertUser({
 							return (
 								<RadioField
 									key={fields[value].key ?? index}
+									showLabel={showLabel}
 									label={label}
 									name={name}
 									list={

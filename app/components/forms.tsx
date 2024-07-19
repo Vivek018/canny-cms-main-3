@@ -2,7 +2,7 @@ import { useSearchParams } from '@remix-run/react'
 import React, { useEffect, useId, useState } from 'react'
 import { useIsDocument } from '@/utils/clients/is-document'
 import { useRefFocus } from '@/utils/clients/ref-focus'
-import { cn, replaceUnderscore, textTruncate } from '@/utils/misx'
+import { cn, replaceUnderscore } from '@/utils/misx'
 import { DetailsMenu, DetailsMenuTrigger, DetailsPopup } from './details-menu'
 import { ErrorList, type ListOfErrors } from './error-boundary'
 import {
@@ -102,6 +102,7 @@ export function TextareaField({
 export function RadioField({
 	list,
 	name,
+	showLabel,
 	label,
 	buttonReset,
 	defaultValue,
@@ -114,6 +115,7 @@ export function RadioField({
 }: {
 	list: any
 	name: string
+	showLabel?: string
 	label: string
 	buttonReset?: any
 	defaultValue?: string
@@ -135,7 +137,7 @@ export function RadioField({
 		(value: any) =>
 			String(value[label]).toLowerCase() ===
 			String(currentValue)?.toLowerCase(),
-	)?.[label]
+	)?.[showLabel ?? label]
 
 	useEffect(() => {
 		setCurrentValue(String(defaultValue))
@@ -165,7 +167,7 @@ export function RadioField({
 
 	const noValue = !valueLabel || valueLabel === 'None'
 
-	const fullList = [{ [label]: 'None' }, ...list]
+	const fullList = [{ [showLabel ?? label]: 'None' }, ...list]
 
 	return (
 		<div
@@ -183,8 +185,8 @@ export function RadioField({
 					className,
 				)}
 			>
-				<span className={cn('mr-2 capitalize text-gray-500')}>
-					{textTruncate(noValue ? replaceUnderscore(name) : valueLabel, 32)}
+				<span className={cn('mr-2 truncate capitalize text-gray-500')}>
+					{replaceUnderscore(noValue ? name : String(valueLabel))}
 				</span>
 			</div>
 			<DetailsMenu
@@ -199,15 +201,15 @@ export function RadioField({
 					)}
 				>
 					<>
-						<span className={cn('mr-2 capitalize', noValue && 'text-gray-400')}>
-							{textTruncate(
-								replaceUnderscore(
-									noValue ? replaceUnderscore(name) : valueLabel,
-								),
-								32,
+						<span
+							className={cn(
+								'mr-2 truncate capitalize',
+								noValue && 'text-gray-400',
 							)}
+						>
+							{replaceUnderscore(noValue ? name : String(valueLabel))}
 						</span>
-						<Icon name="triangle-down" size="md" />
+						<Icon name="triangle-down" size="md" className="flex-shrink-0" />
 					</>
 				</DetailsMenuTrigger>
 				<DetailsPopup className={cn('z-50 w-96', className)}>
@@ -226,9 +228,11 @@ export function RadioField({
 									return (
 										<CommandItem
 											key={itemId}
-											value={value[label]}
+											value={value[showLabel ?? label]}
 											className="m-0 px-1"
-											disabled={disabled || value[label] === valueLabel}
+											disabled={
+												disabled || value[showLabel ?? label] === valueLabel
+											}
 											onSelect={() => {
 												const input = document.getElementById(
 													itemId,
@@ -240,21 +244,15 @@ export function RadioField({
 										>
 											<Icon
 												name="check"
+												size="sm"
 												className={cn(
-													value[label] === valueLabel
+													value[showLabel ?? label] === valueLabel
 														? 'opacity-100'
 														: 'opacity-0',
 												)}
 											/>
-											<h2
-												className={cn(
-													'ml-2 flex w-full cursor-pointer flex-row items-center justify-start font-normal capitalize',
-												)}
-											>
-												{textTruncate(
-													replaceUnderscore(String(value[label])),
-													32,
-												)}
+											<h2 className="ml-2 inline w-full cursor-pointer truncate  text-start font-normal capitalize">
+												{replaceUnderscore(String(value[showLabel ?? label]))}
 											</h2>
 											<Input
 												id={itemId}
@@ -340,7 +338,7 @@ export function SelectorField({
 			)}
 		>
 			<h1 className={cn('w-full text-start text-sm font-medium capitalize')}>
-				{replaceUnderscore(name) + 's'}
+				{replaceUnderscore(name) + ` [Multiple]`}
 			</h1>
 			<DetailsMenu open={open} setOpen={setOpen} className={cn('static')}>
 				<DetailsMenuTrigger
@@ -355,17 +353,17 @@ export function SelectorField({
 						)}
 					>
 						{noValue
-							? textTruncate(replaceUnderscore(name + 's'), 32)
+							? replaceUnderscore(name + 's')
 							: valueLabel?.map((value: any, index) => (
 									<p
 										key={value + index}
-										className="inline-block w-max rounded-sm bg-secondary px-1.5 py-1 text-xs"
+										className="inline-block w-max truncate rounded-sm bg-secondary px-1.5 py-1 text-xs"
 									>
-										{textTruncate(replaceUnderscore(value), 14)}
+										{replaceUnderscore(value)}
 									</p>
 								))}
 					</span>
-					<Icon name="triangle-down" size="md" />
+					<Icon name="triangle-down" size="md" className='flex-shrink-0' />
 				</DetailsMenuTrigger>
 				<DetailsPopup className={cn('z-50 w-96')}>
 					<Command>
@@ -408,6 +406,7 @@ export function SelectorField({
 										>
 											<Icon
 												name="check"
+												size="sm"
 												className={cn(
 													value[label] ===
 														valueLabel?.find(val => val === value[label])
@@ -415,15 +414,8 @@ export function SelectorField({
 														: 'opacity-0',
 												)}
 											/>
-											<h2
-												className={cn(
-													'ml-2 flex w-full cursor-pointer flex-row items-center justify-start font-normal capitalize',
-												)}
-											>
-												{textTruncate(
-													replaceUnderscore(String(value[label])),
-													32,
-												)}
+											<h2 className="ml-2 inline w-full cursor-pointer truncate text-start font-normal capitalize">
+												{replaceUnderscore(String(value[label]))}
 											</h2>
 											<input
 												id={itemId}
@@ -435,7 +427,7 @@ export function SelectorField({
 												autoComplete="on"
 												value={value[isNotId ? label : 'id']}
 												className={cn(
-													'absolute hidden cursor-pointer border-none bg-transparent text-transparent opacity-40 disabled:bg-transparent',
+													'absolute hidden w-full cursor-pointer border-none bg-transparent text-transparent opacity-40 disabled:bg-transparent',
 												)}
 											/>
 										</CommandItem>

@@ -4,17 +4,21 @@ import {
 	createProjectLocation,
 	createEmployee,
 	createUser,
-	createBankDetails,
 	createVehicle,
-	createAdvancePayment,
-	createAttendance,
 	createUserRoles,
-	createPaymentFields,
+	createAdvancePayment,
+	paymentFields,
 } from '@/utils/db-utils'
 import { prisma } from '@/utils/servers/db.server'
 
-const mainRolesArray = ['cms lead', 'cms admin', 'cms assistant', 'waiting']
-const companyRolesArray = ['client lead', 'client admin']
+const mainRolesArray = [
+	'cms lead',
+	'cms admin',
+	'cms assistant',
+	'waiting',
+	'client lead',
+	'client admin',
+]
 
 async function seed() {
 	console.log('Seeding database...')
@@ -27,29 +31,50 @@ async function seed() {
 
 	console.time('Database has been seeded')
 
-	console.time('Created Payment Fields')
-	await prisma.payment_Field.createMany({
-		data: createPaymentFields(),
-	})
-	console.timeEnd('Created Payment Fields')
-
-	const projectRoleId = await prisma.user_Role
-		.findFirst({
-			where: {
-				name: 'project admin',
+	console.time(`Created Companies...`)
+	for (let index = 0; index < Math.floor((Math.random() + 1) * 10); index++) {
+		await prisma.company.create({
+			select: { id: true },
+			data: {
+				...createCompany(),
+				user: {
+					create: Array.from({
+						length: Math.floor((Math.random() + 1) * 5),
+					}).map(() => ({
+						...createUser(),
+						advance_payment: {
+							create: Array.from({
+								length: Math.floor((Math.random() + 1) * 5),
+							}).map(() => ({
+								...createAdvancePayment(),
+							})),
+						},
+					})),
+				},
 			},
 		})
-		.then(role => role?.id)
+	}
+	console.timeEnd(`Created Companies...`)
 
-	const projectLocationRoleId = await prisma.user_Role
-		.findFirst({
-			where: {
-				name: 'project location admin',
+	console.time(`Created Projects...`)
+	for (let index = 0; index < Math.floor((Math.random() + 1) * 15); index++) {
+		await prisma.project.create({
+			data: {
+				...createProject(),
 			},
 		})
-		.then(role => role?.id)
+	}
+	console.timeEnd(`Created Projects...`)
 
-	const totalCompanies = 20
+	console.time(`Created Project Locations...`)
+	for (let index = 0; index < Math.floor((Math.random() + 1) * 30); index++) {
+		await prisma.project_Location.create({
+			data: {
+				...createProjectLocation(),
+			},
+		})
+	}
+	console.timeEnd(`Created Project Locations...`)
 
 	console.time('Created Main User')
 	for (let i = 0; i < 20; i++) {
@@ -62,7 +87,7 @@ async function seed() {
 							.findFirst({
 								where: {
 									name: mainRolesArray[
-										Math.floor(Math.random() * mainRolesArray.length)
+										Math.floor((Math.random() + 1) * mainRolesArray.length)
 									],
 								},
 							})
@@ -74,103 +99,77 @@ async function seed() {
 	}
 	console.timeEnd('Created Main User')
 
-	console.time(`Created ${totalCompanies} users...`)
-	for (let index = 0; index < totalCompanies; index++) {
-		const companyRoleId = await prisma.user_Role
-			.findFirst({
-				where: {
-					name: companyRolesArray[
-						Math.floor(Math.random() * companyRolesArray.length)
-					],
-				},
-			})
-			.then(role => role?.id)
+	const company = await prisma.company.findMany({
+		select: { id: true },
+	})
 
-		await prisma.company.create({
-			select: { id: true },
+	const project = await prisma.project.findMany({
+		select: { id: true },
+	})
+
+	const projectLocation = await prisma.project_Location.findMany({
+		select: { id: true },
+	})
+
+	const user = await prisma.user.findMany({
+		select: { id: true },
+	})
+
+	console.time('Created Payment Fields')
+	for (let i = 0; i < paymentFields.length; i++) {
+		await prisma.payment_Field.create({
 			data: {
-				...createCompany(),
-				user: {
-					create: Array.from({ length: Math.floor(Math.random() * 2) }).map(
-						() => ({
-							...createUser(),
-							role: {
-								connect: {
-									id: companyRoleId,
-								},
-							},
-						}),
-					),
-				},
-				project: {
-					create: Array.from({ length: Math.floor(Math.random() * 2) }).map(
-						() => ({
-							...createProject(),
-							user: {
-								create: Array.from({
-									length: Math.floor(Math.random() * 2),
-								}).map(() => ({
-									...createUser(),
-									role: {
-										connect: {
-											id: projectRoleId,
-										},
-									},
-								})),
-							},
-							project_location: {
-								create: Array.from({
-									length: Math.floor(Math.random() * 10),
-								}).map(() => ({
-									...createProjectLocation(),
-									vehicle: {
-										create: Array.from({
-											length: Math.floor(Math.random() * 3),
-										}).map(() => ({
-											...createVehicle(),
-										})),
-									},
-									user: {
-										create: Array.from({
-											length: Math.floor(Math.random() * 2),
-										}).map(() => ({
-											...createUser(),
-											role: {
-												connect: {
-													id: projectLocationRoleId,
-												},
-											},
-										})),
-									},
-									employee: {
-										create: Array.from({
-											length: Math.floor(Math.random() * 100),
-										}).map(() => ({
-											...createEmployee(),
-											attendance: {
-												create: Array.from({
-													length: Math.floor(Math.random() * 5),
-												}).map(() => createAttendance()),
-											},
-											bank_detail: {
-												create: createBankDetails(),
-											},
-											advance_payment: {
-												create: Array.from({
-													length: Math.floor(Math.random() * 5),
-												}).map(() => createAdvancePayment()),
-											},
-										})),
-									},
-								})),
-							},
-						}),
-					),
+				...paymentFields[i],
+				project_location: {
+					connect: {
+						id: projectLocation[
+							Math.floor(Math.random() * projectLocation.length)
+						].id,
+					},
 				},
 			},
 		})
 	}
-	console.timeEnd(`Created ${totalCompanies} users...`)
+	console.timeEnd('Created Payment Fields')
+
+	console.time(`Created Vehicles...`)
+	for (let index = 0; index < Math.floor((Math.random() + 1) * 20); index++) {
+		await prisma.vehicle.create({
+			data: {
+				...createVehicle(),
+				company_id: company[Math.floor(Math.random() * company.length)].id,
+				project_id: project[Math.floor(Math.random() * project.length)].id,
+				project_location_id:
+					projectLocation[Math.floor(Math.random() * projectLocation.length)]
+						.id,
+			},
+		})
+	}
+	console.timeEnd(`Created Vehicles...`)
+
+	console.time(`Created Employees...`)
+	for (let index = 0; index < Math.floor((Math.random() + 1) * 100); index++) {
+		await prisma.employee.create({
+			data: {
+				...createEmployee(),
+				advance_payment: {
+					create: Array.from({
+						length: Math.floor((Math.random() + 1) * 3),
+					}).map(() => ({
+						...createAdvancePayment(),
+						user_id: user[Math.floor(Math.random() * user.length)].id,
+					})),
+				},
+				company_id: company[Math.floor(Math.random() * company.length)].id,
+				project_id: project[Math.floor(Math.random() * project.length)].id,
+				project_location_id:
+					projectLocation[Math.floor(Math.random() * projectLocation.length)]
+						.id,
+			},
+		})
+	}
+	console.timeEnd(`Created Employees...`)
+
 	console.timeEnd(`Database has been seeded`)
 }
 

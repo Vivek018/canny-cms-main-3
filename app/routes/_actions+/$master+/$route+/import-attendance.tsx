@@ -9,12 +9,14 @@ import { safeRedirect } from '@/utils/servers/http.server'
 import { attendanceSelectorValues } from '@/utils/servers/misx.server'
 
 export async function loader({ params }: LoaderFunctionArgs) {
-	return safeRedirect(`/project_locations/${params.route}/attendance`, {
+	const master = params.master
+	return safeRedirect(`/${master}/${params.route}/attendance?imported=true`, {
 		status: 303,
 	})
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
+	const master = params.master
 	const formData = await request.formData()
 
 	const values: any = []
@@ -33,6 +35,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 	}
 	await prisma.attendance.createMany({
 		data: values,
+		skipDuplicates: true,
 	})
-	return redirect(`/project_locations/${params.route}/attendance?imported=true`)
+	return redirect(`/${master}/${params.route}/attendance?imported=true`)
 }

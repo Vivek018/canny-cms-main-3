@@ -43,13 +43,13 @@ export const pdfData: {
 					designation: true,
 					project_location: {
 						select: {
-							city: true,
-							street_address: true,
-							project: {
-								select: { name: true, company: { select: { name: true } } },
-							},
+							district: true,
 						},
 					},
+					project: {
+						select: { name: true },
+					},
+					company: { select: { name: true } },
 				},
 				where: {
 					id: id,

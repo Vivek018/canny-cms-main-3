@@ -1,9 +1,9 @@
 import { useFormAction, useNavigation } from '@remix-run/react'
 import { type ClassValue, clsx } from 'clsx'
-
 import { useEffect, useMemo, useRef } from 'react'
 import { useSpinDelay } from 'spin-delay'
 import { twMerge } from 'tailwind-merge'
+import { NORMAL_DAY_HOURS } from '@/constant'
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs))
@@ -46,14 +46,17 @@ export function getDomainUrl(request: Request) {
 }
 
 export function replaceUnderscore(str: string) {
+	if (typeof str !== 'string') return str
 	return str?.replaceAll(/[-_]/g, ' ')
 }
 
 export function addUnderscore(str: string) {
+	if (typeof str !== 'string') return str
 	return str?.replaceAll(/[' ']/g, '_').toLowerCase()
 }
 
 export function capitalizeAfterUnderscore(str: string) {
+	if (typeof str !== 'string') return str
 	const words = str?.split('_')
 	const capitalizedWords = words.map((word, index) =>
 		index !== 0 ? word.charAt(0).toUpperCase() + word.slice(1) : word,
@@ -62,22 +65,27 @@ export function capitalizeAfterUnderscore(str: string) {
 }
 
 export function capitalizeFirstLetter(str: string) {
+	if (typeof str !== 'string') return str
 	return str.charAt(0).toUpperCase() + str.slice(1)
 }
 
 export function hasId(str: string) {
+	if (typeof str !== 'string') return str
 	return str.startsWith('id') || str.endsWith('_id')
 }
 
 export function isTitle(str: string) {
+	if (typeof str !== 'string') return false
 	if (
 		str === 'name' ||
 		str === 'full_name' ||
 		str === 'label' ||
 		str === 'title' ||
-		str === 'city'
-	)
+		str === 'value' ||
+		str === 'district'
+	) {
 		return true
+	}
 	return false
 }
 
@@ -126,10 +134,10 @@ export function formatStringIntoHtml(value: string, length?: number) {
 	if (typeof value === 'string' && value.length > 20) {
 		const dateValue = new Date(value)
 		if (isNaN(dateValue.getTime())) {
-			return <p>{textTruncate(replaceUnderscore(value), length ?? 40)}</p>
+			return <p className="truncate">{replaceUnderscore(value)}</p>
 		} else {
 			return (
-				<p>
+				<p className="truncate">
 					{`${dateValue.getDate()}/${dateValue.getMonth() + 1}/${dateValue.getFullYear()}`}
 				</p>
 			)
@@ -138,8 +146,9 @@ export function formatStringIntoHtml(value: string, length?: number) {
 	if (typeof value === 'boolean') {
 		return <p>{value ? 'Yes' : 'No'}</p>
 	}
-	if (typeof value === 'string') return <p>{replaceUnderscore(value)}</p>
-	return <p>{value}</p>
+	if (typeof value === 'string')
+		return <p className="truncate">{replaceUnderscore(value)}</p>
+	return <p className="truncate">{value}</p>
 }
 
 export const months = [
@@ -157,12 +166,13 @@ export const months = [
 	{ value: '12', label: 'December' },
 ]
 
-export function getYearsList(startYear: number, endYear: number) {
-	let years = []
-	for (let year = startYear; year <= endYear; year++) {
-		years.unshift({ value: year.toString(), label: year.toString() })
+export const getYears = (years = 35): { value: number }[] => {
+	const currentYear = new Date().getFullYear()
+	const yearsArray = []
+	for (let i = currentYear; i > currentYear - years; i--) {
+		yearsArray.push({ value: i })
 	}
-	return years
+	return yearsArray
 }
 
 // this is to throw error for any condition we send
@@ -302,6 +312,36 @@ export const flattenObject = ({
 	return flattenedObj
 }
 
+export const getAttendanceDays = ({
+	attendance,
+}: {
+	attendance: { present: boolean; holiday: boolean; no_of_hours: number }[]
+}) => {
+	let normalPresentDays = 0
+	let overtimeDays = 0
+	for (let i = 0; i < attendance?.length; i++) {
+		if (attendance[i].present && !attendance[i].holiday) {
+			if (attendance[i].no_of_hours > NORMAL_DAY_HOURS) {
+				normalPresentDays++
+				overtimeDays =
+					overtimeDays +
+					(attendance[i].no_of_hours - NORMAL_DAY_HOURS) / NORMAL_DAY_HOURS
+			} else {
+				normalPresentDays =
+					normalPresentDays + attendance[i].no_of_hours / NORMAL_DAY_HOURS
+			}
+		} else if (!attendance[i].present && attendance[i].holiday) {
+			normalPresentDays++
+		} else if (attendance[i].present && attendance[i].holiday) {
+			overtimeDays = overtimeDays + attendance[i].no_of_hours / NORMAL_DAY_HOURS
+		}
+	}
+	return {
+		normalPresentDays: parseFloat(normalPresentDays.toFixed(3)),
+		overtimeDays: parseFloat(overtimeDays.toFixed(3)),
+	}
+}
+
 export const transformAttendance = ({
 	data,
 	month,
@@ -331,7 +371,7 @@ export const transformAttendance = ({
 							if (item.present === true) {
 								innerData[dateString] = 'P'
 							} else if (item.holiday === true) {
-								innerData[dateString] = 'H'
+								innerData[dateString] = 'PH'
 							} else {
 								innerData[dateString] = 'A'
 							}
@@ -357,8 +397,109 @@ export const transformAttendance = ({
 	return returnData.flat()
 }
 
-export const transformPaymentData = (paymentData: any) => {
-	let value = paymentData.value
+export const transformPaymentData = ({
+	employee,
+	payment_field,
+	attendance,
+}: {
+	employee: {
+		skill_type: string
+		company_id: string
+		project_id: string
+	}
+	payment_field: {
+		name: string
+		is_deduction: boolean
+		skill_type: string
+		service_charge_field: boolean
+		percentage_of?: {
+			name: string
+			is_deduction: boolean
+			skill_type: string
+			service_charge_field: boolean
+			value: {
+				value: number
+				max_value: number
+				type: string
+				value_type: string
+				skill_type: string
+				month: number
+				year: number
+				company: { id: string }[]
+				project: { id: string }[]
+			}[]
+		}[]
+		value: {
+			value: number
+			max_value: number
+			type: string
+			value_type: string
+			skill_type: string
+			month: number
+			year: number
+			company: { id: string }[]
+			project: { id: string }[]
+		}[]
+	}
+	attendance: { present: boolean; holiday: boolean; no_of_hours: number }[]
+}) => {
+	let value = 0
+	const { normalPresentDays, overtimeDays } = getAttendanceDays({ attendance })
+
+	const paymentFieldValues = payment_field.value
+	if (paymentFieldValues.length) {
+		for (let i = 0; i < paymentFieldValues.length; i++) {
+			if (
+				paymentFieldValues[i].company.find(
+					({ id }) => id === employee.company_id,
+				) &&
+				paymentFieldValues[i].project.find(
+					({ id }) => id === employee.project_id,
+				) &&
+				(paymentFieldValues[i].skill_type === employee.skill_type ||
+					paymentFieldValues[i].skill_type === 'all')
+			) {
+				if (paymentFieldValues[i].type === 'percentage') {
+					if (payment_field.percentage_of?.length) {
+						value = parseFloat(
+							Math.min(
+								(paymentFieldValues[i].value *
+									(paymentFieldValues[i].max_value ?? Number.MAX_VALUE)) /
+									100,
+								payment_field.percentage_of.reduce(
+									(total, percentage_payment_field̉) => {
+										const percentageValue = transformPaymentData({
+											employee,
+											payment_field: percentage_payment_field̉,
+											attendance,
+										})
+										return (
+											total +
+											(percentageValue * paymentFieldValues[i].value) / 100
+										)
+									},
+									0,
+								),
+							).toFixed(2),
+						)
+					}
+				}
+				if (paymentFieldValues[i].value_type === 'daily') {
+					if (paymentFieldValues[i].type === 'fixed') {
+						value = paymentFieldValues[i].value * normalPresentDays
+					}
+				} else if (paymentFieldValues[i].value_type === 'overtime') {
+					if (paymentFieldValues[i].type === 'fixed') {
+						value = paymentFieldValues[i].value * overtimeDays
+					}
+				} else if (paymentFieldValues[i].value_type === 'monthly') {
+					if (paymentFieldValues[i].type === 'fixed') {
+						value = paymentFieldValues[i].value
+					}
+				}
+			}
+		}
+	}
 
 	return value
 }

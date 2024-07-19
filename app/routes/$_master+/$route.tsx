@@ -12,11 +12,11 @@ import { Header } from '@/components/header'
 import { DocumentPage } from '@/components/page/document'
 import { buttonVariants } from '@/components/ui/button'
 import { Icon } from '@/components/ui/icon'
-import { singleRouteName } from '@/constant'
+import { NO_IMAGE, singleRouteName } from '@/constant'
 import { useIsDocument } from '@/utils/clients/is-document'
 import { imageFieldName } from '@/utils/input-types'
 import { cn, formatString, replaceUnderscore } from '@/utils/misx'
-import { generateEnabledList } from '@/utils/pdf-list.client'
+import { generateEnabledList } from '@/utils/pdf-list'
 import {
 	getRouteNameSelector,
 	getRouteNameSelectorHeading,
@@ -56,28 +56,25 @@ export default function Route() {
 	const routeName = singleRouteName[master as keyof typeof singleRouteName]
 	const defaultRoute = `/${master}/${route}`
 	const imageField = imageFieldName[routeName as keyof typeof imageFieldName]
+	const image = (data![imageField] ?? NO_IMAGE) as unknown as string
 
 	let children = (
 		<>
 			<div className="flex w-full items-center justify-between ">
 				<div className="flex gap-4">
 					{imageField ? (
-						<div className="grid max-h-24 min-h-20 w-24 place-items-center overflow-hidden rounded-md border border-gray-300 dark:opacity-70">
+						<Link
+							className="grid max-h-24 min-h-20 w-24 place-items-center overflow-hidden rounded-md border border-gray-300 dark:opacity-70"
+							to={image === NO_IMAGE ? '#' : image}
+						>
 							<img
 								className="min-h-full w-full object-contain"
-								src={
-									data![imageField] ? `${data![imageField]}` : '/no_image.jpeg'
-								}
+								src={image}
 								alt="no-media"
 							/>
-						</div>
+						</Link>
 					) : null}
-					<div
-						className={cn(
-							'flex gap-4',
-							imageField && 'flex-col items-start justify-around gap-2',
-						)}
-					>
+					<div className={cn('flex flex-col items-start justify-around gap-4')}>
 						<h1 className="text-2xl font-medium capitalize tracking-wide">
 							{data ? data[headings[0] as any] : null}
 						</h1>

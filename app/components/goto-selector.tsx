@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { navList } from '@/constant'
 import { useIsDocument } from '@/utils/clients/is-document'
 import { useRefFocus } from '@/utils/clients/ref-focus'
-import { cn, textTruncate } from '@/utils/misx'
+import { cn } from '@/utils/misx'
 import { type IconName } from '~/icon-name'
 import { DetailsMenu, DetailsMenuTrigger, DetailsPopup } from './details-menu'
 import {
@@ -54,9 +54,7 @@ export function GotoSelector({
 					setFocus={setGotoFocus}
 				/>
 			</DetailsMenuTrigger>
-			<DetailsPopup
-				className={cn('mx-5 w-52', 'max-lg:mx-0', open && 'mx-0')}
-			>
+			<DetailsPopup className={cn('mx-5 w-52', 'max-lg:mx-0', open && 'mx-0')}>
 				<Command>
 					<CommandInput
 						divClassName={cn('hidden', isDocument && 'flex')}
@@ -76,12 +74,11 @@ export function GotoSelector({
 											key={link}
 											to={link!}
 											className={cn(
-												'my-0.5 flex h-1 items-center justify-start gap-2 rounded-sm px-2 py-4 hover:bg-accent',
+												' my-0.5 flex h-1 w-full items-center justify-start gap-2 rounded-sm px-2 py-4 hover:bg-accent',
 											)}
 										>
-											<Icon name={icon as IconName}>
-												{textTruncate(name, 18)}
-											</Icon>
+											<Icon name={icon as IconName}></Icon>
+											<p className="truncate">{name}</p>
 										</Link>
 									</CommandItem>
 								) : null

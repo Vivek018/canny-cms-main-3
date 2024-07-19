@@ -27,7 +27,7 @@ export function Modal({
 	return (
 		<div
 			className={cn(
-				'min-w-screen absolute inset-0 z-30 grid max-h-full min-h-screen place-items-end',
+				'min-w-screen absolute inset-0 z-30 grid min-h-screen place-items-end',
 				inMiddle && 'place-items-center',
 				modalClassName,
 			)}
@@ -47,7 +47,7 @@ export function Modal({
 					if (!shouldNotNavigate) {
 						navigate(-1)
 					} else {
-						navigate(link ?? '..')
+						navigate(link ?? '..', { replace: true })
 					}
 				}}
 			>
@@ -55,7 +55,7 @@ export function Modal({
 			</Link>
 			<div
 				className={cn(
-					'no-scrollbar z-40 h-screen max-h-screen overflow-scroll border-[0.5px] border-muted-foreground/15 bg-background px-12 py-6 shadow-lg dark:bg-muted',
+					'no-scrollbar z-40 h-screen max-h-full overflow-scroll border-[0.5px] border-muted-foreground/15 bg-background px-12 py-6 shadow-lg dark:bg-muted',
 					inMiddle ? 'h-min animate-pop rounded-md' : 'animate-slideInRight',
 					className,
 				)}
@@ -76,7 +76,7 @@ export function Modal({
 						if (!shouldNotNavigate) {
 							navigate(-1)
 						} else {
-							navigate(link ?? '..')
+							navigate(link ?? '..', { replace: true })
 						}
 					}}
 				>

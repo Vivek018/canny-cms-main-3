@@ -1,5 +1,5 @@
 import { Form } from '@remix-run/react'
-import { cn, textTruncate } from '@/utils/misx'
+import { cn } from '@/utils/misx'
 import { Icon } from './ui/icon'
 
 type FilterTabsProps = {
@@ -16,10 +16,10 @@ export function FilterTabs({ filters = [], name }: FilterTabsProps) {
 						<div
 							key={filter}
 							className={cn(
-								'flex min-w-max items-center gap-1.5 rounded-sm bg-background p-1.5 text-xs leading-3 tracking-tight text-muted-foreground shadow-sm',
+								'flex min-w-max items-center gap-1.5 truncate rounded-sm bg-background p-1.5 text-xs leading-3 tracking-tight text-muted-foreground shadow-sm',
 							)}
 						>
-							{textTruncate(filter, 26)}
+							{filter}
 							<Form
 								method="POST"
 								action={`/filters/${name}`}

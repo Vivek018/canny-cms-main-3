@@ -3,7 +3,7 @@ import { type ReactNode, useEffect, useState } from 'react'
 import { useIsDocument } from '@/utils/clients/is-document'
 import { useRefFocus } from '@/utils/clients/ref-focus'
 import { filters } from '@/utils/filters'
-import { cn, replaceUnderscore, textTruncate } from '@/utils/misx'
+import { cn, replaceUnderscore } from '@/utils/misx'
 import { DetailsMenu, DetailsMenuTrigger, DetailsPopup } from './details-menu'
 import { Button } from './ui/button'
 import {
@@ -27,9 +27,17 @@ export function FilterSelector({
 	defaultValue?: any
 }) {
 	const [filterFocus, setFilterFocus] = useState(false)
+	const hide =
+		filters[name as keyof typeof filters]().length === 0 ||
+		(filters[name as keyof typeof filters]().length === 1 &&
+			filters[name as keyof typeof filters]()[0].name === 'search')
 
 	return (
-		<DetailsMenu open={filterFocus} setOpen={setFilterFocus}>
+		<DetailsMenu
+			open={filterFocus}
+			setOpen={setFilterFocus}
+			className={cn(hide && 'hidden')}
+		>
 			<DetailsMenuTrigger open={filterFocus}>
 				<Icon name="filter">
 					<span>Filter</span>
@@ -183,7 +191,10 @@ export function DetailsSelector({
 	const fullList = noNone
 		? list
 		: list
-			? [{ [showLabel ?? label]: 'none' }, ...list]
+			? [
+					{ [showLabel ?? label]: 'none', [label]: 'none' },
+					...list,
+				]
 			: []
 
 	const valueLabel = fullList?.find((value: any) => {
@@ -220,13 +231,15 @@ export function DetailsSelector({
 						triggerClassName,
 					)}
 				>
-					<span className={cn('mr-2 capitalize', noValue && 'text-gray-400')}>
-						{textTruncate(
-							noValue ? replaceUnderscore(name) : valueLabel,
-							length ?? 15,
+					<span
+						className={cn(
+							'mr-2 truncate capitalize',
+							noValue && 'text-gray-400',
 						)}
+					>
+						{replaceUnderscore(noValue ? name : valueLabel)}
 					</span>
-					<Icon name="triangle-down" size="md" />
+					<Icon name="triangle-down" size="md" className='flex-shrink-0' />
 				</DetailsMenuTrigger>
 				<DetailsPopup className={cn('z-50 w-52', popClassName)}>
 					<Command>
@@ -257,14 +270,15 @@ export function DetailsSelector({
 										>
 											<Icon
 												name="check"
+                        size="sm"
 												className={cn(
 													value[showLabel ?? label] === valueLabel
 														? 'opacity-100'
 														: 'opacity-0',
 												)}
 											/>
-											<h2 className="ml-2 flex h-9 w-32 cursor-pointer flex-row items-center justify-start font-normal capitalize ">
-												{textTruncate(value[showLabel ?? label], length ?? 18)}
+											<h2 className="ml-2 inline py-1.5 w-full cursor-pointer text-start truncate font-normal capitalize">
+												{replaceUnderscore(value[showLabel ?? label])}
 											</h2>
 											<Input
 												id={itemId}
@@ -278,7 +292,7 @@ export function DetailsSelector({
 													setOpen(false)
 												}}
 												className={cn(
-													'absolute z-40 h-7 w-40 cursor-pointer border-none bg-transparent opacity-40 disabled:bg-transparent',
+													'absolute z-40 h-7 w-full cursor-pointer border-none bg-transparent opacity-40 disabled:bg-transparent',
 												)}
 											/>
 										</CommandItem>
@@ -290,96 +304,5 @@ export function DetailsSelector({
 				</DetailsPopup>
 			</DetailsMenu>
 		</div>
-	)
-}
-
-export function StaticSelector({
-	list,
-	defaultValue,
-	selectedValues,
-	setSelectedValues,
-	index,
-}: {
-	list: any
-	defaultValue?: string
-	selectedValues?: any
-	setSelectedValues?: any
-	index: any
-}) {
-	const [open, setOpen] = useState(false)
-	const { ref: inputRef } = useRefFocus(open)
-	const { isDocument } = useIsDocument()
-
-	const [currentValue, setCurrentValue] = useState(defaultValue ?? '')
-
-	const valueLabel = list?.find((value: any) => {
-		return String(value).toLowerCase() === currentValue?.toLowerCase()
-	})
-
-	const fullList = list ? ['None', ...list] : []
-
-	const noValue = !valueLabel || valueLabel === 'None'
-
-	return (
-		<DetailsMenu open={open} setOpen={setOpen} className={cn('static')}>
-			<DetailsMenuTrigger
-				className={cn(
-					'flex w-full  justify-between border-muted-foreground dark:border-muted-foreground',
-				)}
-			>
-				<span
-					className={cn('mr-2 w-max capitalize', noValue && 'text-gray-400')}
-				>
-					{textTruncate(noValue ? 'Skip' : replaceUnderscore(valueLabel), 15)}
-				</span>
-				<Icon name="triangle-down" size="md" />
-			</DetailsMenuTrigger>
-			<DetailsPopup className={cn('z-50')}>
-				<Command>
-					<CommandInput
-						ref={inputRef}
-						divClassName={cn('hidden', isDocument && 'flex')}
-					/>
-					<CommandList className="no-scrollbar">
-						<CommandGroup className="flex flex-col">
-							{fullList?.map((value: any, i: any) => {
-								const itemId = String(value + i + index).replaceAll(
-									/[^a-zA-Z0-9]/g,
-									'',
-								)
-								return (
-									<CommandItem
-										key={itemId}
-										value={value}
-										className="m-0 px-1 py-0 "
-										disabled={
-											value === valueLabel || selectedValues?.includes(value)
-										}
-										onSelect={() => {
-											setSelectedValues((prevValues: any) => [
-												...prevValues.filter((val: any) => val !== valueLabel),
-												value !== 'None' && value,
-											])
-											setCurrentValue(value)
-											setOpen(false)
-										}}
-									>
-										<Icon
-											name="check"
-											className={cn(
-												value === valueLabel ? 'opacity-100' : 'opacity-0',
-											)}
-										/>
-										<h2 className="ml-2 flex h-9 w-32 cursor-pointer flex-row items-center justify-start font-normal capitalize ">
-											{textTruncate(replaceUnderscore(value), 16)}
-										</h2>
-									</CommandItem>
-								)
-							})}
-						</CommandGroup>
-					</CommandList>
-				</Command>
-			</DetailsPopup>
-		</DetailsMenu>
 	)
 }

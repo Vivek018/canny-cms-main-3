@@ -6,7 +6,7 @@ import {
 import { useLoaderData } from '@remix-run/react'
 import { routeObjectTitle, singleRouteName } from '@/constant'
 import Upsert from '@/routes/$master.upsert'
-import { action as upsertAction } from '@/routes/_actions+/$master.upsert'
+import { action as upsertAction } from '@/routes/_actions+/$master+/upsert'
 import { capitalizeAfterUnderscore } from '@/utils/misx'
 import { prisma } from '@/utils/servers/db.server'
 import { inputList } from '@/utils/servers/list.server'
@@ -45,16 +45,17 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
 export async function action(args: ActionFunctionArgs) {
 	const tab = capitalizeAfterUnderscore(args.params.tab ?? '')
-	const master = Object.keys(singleRouteName).find(
-		key => singleRouteName[key] === tab,
-	)
+	const master =
+		Object.keys(singleRouteName).find(key => singleRouteName[key] === tab) ??
+		tab
+
 	return upsertAction({
 		...args,
 		connectMaster: master,
 	})
 }
 
-export default function TabConnect() {
+export default function TabAdd() {
 	const { data, master, route, tab } = useLoaderData<typeof loader>()
 
 	return (

@@ -1,4 +1,4 @@
-import { Form, Link } from '@remix-run/react'
+import { Link } from '@remix-run/react'
 import {
 	DetailsMenu,
 	DetailsMenuLabel,
@@ -6,7 +6,7 @@ import {
 	DetailsMenuTrigger,
 	DetailsPopup,
 } from '@/components/details-menu'
-import { Button, buttonVariants } from '@/components/ui/button'
+import { buttonVariants } from '@/components/ui/button'
 import { Icon } from '@/components/ui/icon'
 import { PAGE_SIZE } from '@/constant'
 import {
@@ -14,7 +14,6 @@ import {
 	formatStringIntoHtml,
 	isTitle,
 	replaceUnderscore,
-	textTruncate,
 } from '../utils/misx'
 import { Checkbox } from './ui/checkbox'
 
@@ -28,6 +27,7 @@ export const columns = ({
 	pageSize = PAGE_SIZE,
 	updateLink,
 	noSelect = false,
+	noActions = false,
 }: {
 	headers: {
 		accessorKey: string
@@ -41,6 +41,7 @@ export const columns = ({
 	pageSize?: number
 	updateLink?: string
 	noSelect?: boolean
+	noActions?: boolean
 }): any[] => [
 	{
 		id: 'select',
@@ -84,7 +85,7 @@ export const columns = ({
 		cell: ({ row }: { row: any }) => {
 			const value = row.renderValue(accessorKey)
 
-			if (typeof value === 'string' && isTitle(accessorKey)) {
+			if (isTitle(accessorKey)) {
 				const link = `/${name}/${row.original.id}${extraRoute ? `/${extraRoute}` : ''}`
 				return (
 					<Link
@@ -93,27 +94,33 @@ export const columns = ({
 							'h-min pl-0 capitalize underline-offset-4 hover:underline focus-visible:underline focus-visible:outline-none',
 						)}
 					>
-						<div className="min-w-max">{textTruncate(replaceUnderscore(value), length ?? 30)}</div>
+						<div className="max-w-52 truncate">
+							{typeof value === 'string' ? replaceUnderscore(value) : value}
+						</div>
 					</Link>
 				)
 			} else
 				return (
-					<div className="min-w-max">{formatStringIntoHtml(value, length)}</div>
+					<div className="max-w-52">{formatStringIntoHtml(value, length)}</div>
 				)
 		},
 	})),
 	{
 		id: 'actions',
 		cell: ({ row }: { row: any }) => {
-			const singleData = row.original
 			return (
-				<DetailsMenu className=''>
-					<DetailsMenuTrigger className="my-1.5 h-full w-min border-none bg-transparent">
+				<DetailsMenu>
+					<DetailsMenuTrigger
+						className={cn(
+							'h-min w-min border-none bg-transparent',
+							(noActions || !headers.length) && 'hidden',
+						)}
+					>
 						<span className="sr-only">Open menu</span>
 						<Icon name="dots-vertical" size="xs" />
 					</DetailsMenuTrigger>
 					<DetailsPopup
-						className={cn(' right-0 gap-px', row.index > 5 && ' bottom-8')}
+						className={cn('right-0 gap-px', row.index > 5 && ' bottom-8')}
 					>
 						<DetailsMenuLabel className="px-2 py-0.5">Actions</DetailsMenuLabel>
 						<DetailsMenuSeparator />
@@ -150,17 +157,6 @@ export const columns = ({
 								{extraRoute ? ' - ' + extraRoute?.split('?')[0] : null}
 							</div>
 						</Link>
-						<Form>
-							<Button
-								variant="ghost"
-								className="h-min justify-start py-1.5 capitalize"
-								onClick={() => {
-									return navigator.clipboard.writeText(singleData.id)
-								}}
-							>
-								Copy {replaceUnderscore(singleRoute)} ID
-							</Button>
-						</Form>
 					</DetailsPopup>
 				</DetailsMenu>
 			)

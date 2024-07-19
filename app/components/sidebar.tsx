@@ -2,7 +2,7 @@ import { Form, Link, NavLink, useLocation } from '@remix-run/react'
 import { useState } from 'react'
 import { sideNavList } from '@/constant'
 import { useIsDocument } from '@/utils/clients/is-document'
-import { cn, textTruncate } from '@/utils/misx'
+import { cn } from '@/utils/misx'
 import { type Sidebar } from '@/utils/servers/sidebar.server'
 import { type Theme } from '@/utils/servers/theme.server'
 import { useOptimisticThemeMode } from '@/utils/theme'
@@ -192,11 +192,9 @@ export function Sidebar({ className, theme, sidebar }: SidebarProps) {
 					>
 						<Icon name="avatar" size="md" />
 						<div className={cn('max-lg:hidden', open && 'hidden')}>
-							<h2 className="mb-1 leading-none">
-								{textTruncate(' Vivek Chauhan', 21)}
-							</h2>
-							<p className="font-mono text-[10px] capitalize leading-none tracking-tight opacity-60">
-								{textTruncate('Account Manager', 21)}
+							<h2 className="mb-1 truncate leading-none">{' Vivek Chauhan'}</h2>
+							<p className="truncate font-mono text-[10px] capitalize leading-none tracking-tight opacity-60">
+								{'Account Manager'}
 							</p>
 						</div>
 					</DetailsMenuTrigger>

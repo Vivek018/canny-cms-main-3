@@ -3,8 +3,12 @@ import { type NavList } from 'types'
 export const defaultMonth = (new Date().getMonth() + 1).toString()
 export const defaultYear = new Date().getFullYear().toString()
 
-export const PAGE_SIZE = 13
+export const PAGE_SIZE = 15
+export const TAB_PAGE_SIZE = 10
 export const MAX_DATA_LENGTH = 400
+export const NORMAL_DAY_HOURS = 8
+
+export const NO_IMAGE = '/no_image.jpeg';
 
 export const sideNavList = [
 	{ name: 'Main Menu', isLabel: true },
@@ -121,6 +125,7 @@ export const singleRouteName: { [key: string]: string } = {
 	projects: 'project',
 	project_locations: 'project_Location',
 	vehicles: 'vehicle',
+	value: 'value',
 }
 
 export const importExportEnabled = [
@@ -143,6 +148,13 @@ export const routeObjectTitle: { [key: string]: string } = {
 	[singleRouteName.advances]: 'label',
 	[singleRouteName.payment_fields]: 'name',
 	[singleRouteName.projects]: 'name',
-	[singleRouteName.project_locations]: 'city',
+	[singleRouteName.project_locations]: 'district',
 	[singleRouteName.vehicles]: 'number',
+}
+
+export const noTabList: { [key: string]: string[] } = {
+	[singleRouteName.companies]: ['value'],
+	[singleRouteName.projects]: ['value'],
+	[singleRouteName.payment_fields]: ['percentage_of', 'is_percentage'],
+	value: ['company', 'project'],
 }

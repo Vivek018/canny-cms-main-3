@@ -1,4 +1,5 @@
-import { routeObjectTitle } from '@/constant'
+import { redirect, type ActionFunctionArgs } from '@remix-run/node'
+import { NORMAL_DAY_HOURS, routeObjectTitle } from '@/constant'
 import { inputTypes } from '../input-types'
 import { formatDate } from '../misx'
 import { Schemas } from '../schema'
@@ -16,6 +17,55 @@ export function invariantResponse(
 			...responseInit,
 		})
 	}
+}
+
+export async function extraFilterAction({ request }: ActionFunctionArgs) {
+	const formData = await request.formData()
+	const url = new URL(request.url)
+	const company = formData.get('company')
+	const project = formData.get('project')
+	const month = formData.get('month')
+	const year = formData.get('year')
+
+	console.log(company, project, month, year)
+
+	const first = formData.get('first')
+	const prev = formData.get('prev')
+	const next = formData.get('next')
+	const last = formData.get('last')
+
+	if (first === 'true') {
+		url.searchParams.set('page', '1')
+	} else if (prev) {
+		if (parseInt(prev.toString()) >= 1)
+			url.searchParams.set('page', prev.toString())
+	} else if (next) {
+		url.searchParams.set('page', next.toString())
+	} else if (last) {
+		url.searchParams.set('page', last.toString())
+	}
+
+	if (company && company !== 'on' && company !== 'none') {
+		url.searchParams.set('company', company.toString())
+	} else if (company === 'none') {
+		url.searchParams.delete('company')
+	}
+
+	if (project && project !== 'on' && project !== 'none') {
+		url.searchParams.set('project', project.toString())
+	} else if (project === 'none') {
+		url.searchParams.delete('project')
+	}
+
+	if (month && month !== '0' && month !== 'none') {
+		url.searchParams.set('month', month.toString())
+	}
+
+	if (year && year !== '0' && year !== 'none') {
+		url.searchParams.set('year', year.toString())
+	}
+
+	return redirect(url.toString())
 }
 
 export const getImportedSelectorValues = async (
@@ -79,7 +129,7 @@ export const attendanceSelectorValues = async (values: any) => {
 		})
 		const date = values.date
 		const dateObject = formatDate(date)
-		let no_of_hours = 8
+		let no_of_hours = NORMAL_DAY_HOURS
 		let present = true
 		let holiday = false
 
@@ -88,7 +138,7 @@ export const attendanceSelectorValues = async (values: any) => {
 		} else if (values[date] === 'H') {
 			present = true
 			holiday = false
-			no_of_hours = 4
+			no_of_hours = NORMAL_DAY_HOURS / 2
 		} else if (
 			values[date] === 'PL' ||
 			values[date] === 'PH' ||
@@ -100,7 +150,7 @@ export const attendanceSelectorValues = async (values: any) => {
 		} else if (values[date] === 'POW' || values[date] === 'POH') {
 			present = true
 			holiday = true
-			no_of_hours = 8
+			no_of_hours = NORMAL_DAY_HOURS
 		} else {
 			present = false
 			no_of_hours = 0

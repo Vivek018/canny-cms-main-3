@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client'
 import { z } from 'zod'
-import { singleRouteName } from '@/constant'
+import { noTabList, singleRouteName } from '@/constant'
 import { inputTypes } from '@/utils/input-types'
 import { capitalizeFirstLetter, formatDate, hasId, isTitle } from './misx'
 
@@ -160,7 +160,8 @@ export const Schemas: { [key: string]: any } = {
 		photo: zImage,
 		designation: zString.default('Sampler'),
 		skill_type: z.enum(skillTypesEnum).default('unskilled'),
-		project: zNumberString.optional(),
+		company: zNumberString,
+		project: zNumberString,
 		project_location: zNumberString,
 		date_of_birth: z
 			.date()
@@ -203,31 +204,24 @@ export const Schemas: { [key: string]: any } = {
 		name: zNumberString,
 		starting_date: z.date().default(new Date()),
 		ending_date: z.date().optional(),
-		company: zNumberString,
 	}),
 	[singleRouteName.project_locations]: z.object({
 		id: z.string().optional(),
+		district: zString,
 		city: zString,
 		state: zString,
 		postal_code: z.number().min(1000).max(9999999).optional(),
 		esic_code: zNumberString.max(20).optional(),
-		project: z.string(),
 		payment_field: z.array(zNumberString).optional(),
-		street_address: zTextArea.optional(),
 	}),
 	[singleRouteName.payment_fields]: z.object({
 		id: z.string().optional(),
-		name: zString,
+		name: zNumberString,
 		description: zTextArea.max(1000).optional(),
-		type: z.enum(['fixed', 'percentage']).default('fixed'),
-		skill_type: z.enum([...skillTypesEnum, 'all']).default('all'),
-		value: z.number().min(1).max(1000000).optional(),
-		value_type: z.enum(['daily', 'monthly']).default('daily'),
 		sort_index: zNumber.optional(),
 		is_deduction: z.enum(booleanEnum).default('false'),
 		service_charge_field: z.enum(booleanEnum).default('false'),
 		percentage_of: z.array(zNumberString).optional(),
-		project: zNumberString.optional(),
 		project_location: z.array(zNumberString).optional(),
 	}),
 	[singleRouteName.vehicles]: z.object({
@@ -236,12 +230,37 @@ export const Schemas: { [key: string]: any } = {
 		number: zNumberString,
 		type: z.enum(vehicleTypeEnum).default('car'),
 		year_bought: z.number().int().min(1980).max(new Date().getFullYear()),
-		project: zNumberString.optional(),
-		project_location: zNumberString.optional(),
+		company: zNumberString,
+		project: zNumberString,
+		project_location: zNumberString,
+		employee: zNumberString.optional(),
 		kms_driven: z.number().int().min(1).max(10000000).optional(),
 		status: z.enum(statusEnum).default('active'),
 		price: z.number().int().min(1000).max(100000000).optional(),
 		other_details: zTextArea.optional(),
+	}),
+	value: z.object({
+		id: z.string().optional(),
+		value: z.number().min(0).max(10000000),
+		max_value: z.number().min(0).max(10000000).optional(),
+		type: z.enum(['fixed', 'percentage']).default('fixed'),
+		value_type: z.enum(['daily', 'monthly', 'overtime']).default('daily'),
+		skill_type: z.enum([...skillTypesEnum, 'all']).default('all'),
+		month: z
+			.number()
+			.int()
+			.min(1)
+			.max(12)
+			.default(new Date().getMonth() + 1),
+		year: z
+			.number()
+			.int()
+			.min(1980)
+			.max(new Date().getFullYear())
+			.default(new Date().getFullYear()),
+		payment_field: zNumberString.optional(),
+		company: z.array(zNumberString).optional(),
+		project: z.array(zNumberString).optional(),
 	}),
 }
 
@@ -294,7 +313,6 @@ export const getSelectorValues = (
 
 	for (const key in Schemas[routeName].shape) {
 		const typeKey = inputTypes[routeName][key]
-
 		if (key === 'id' || !values[key] || typeKey?.ignore) continue
 		else if (typeKey?.type === 'radio') {
 			const isBoolean = values[key] === 'true' || values[key] === 'false'
@@ -336,9 +354,15 @@ export const getSelectorValues = (
 						}
 			}
 		} else if (typeKey?.isMulti) {
-			if (disconnectValues && disconnectValues[key]?.length) {
+			if (
+				disconnectValues &&
+				disconnectValues[typeKey.name] &&
+				disconnectValues[typeKey.name][key]?.length
+			) {
+				const disconnectValue = disconnectValues[typeKey.name]
+
 				selectorValues[key] = {
-					disconnect: disconnectValues[key],
+					disconnect: disconnectValue[key],
 					connect: values[key].map((value: any) => ({ id: value })),
 				}
 			} else {
@@ -348,7 +372,7 @@ export const getSelectorValues = (
 			}
 		} else if (typeKey?.type === 'select') {
 			const typeIgnoreKeys = inputTypes[routeName]?.ignoreDependentKeys?.filter(
-				(item: string) => item !== key,
+				(item: string) => item !== key && !typeKey?.isNeeded?.includes(item),
 			)
 
 			if (typeIgnoreKeys) {
@@ -396,14 +420,12 @@ export const getRouteNameSelector = (routeName: string) => {
 	)?.fields
 
 	return fields?.reduce((acc: any, key) => {
+		const typeKey = inputTypes[routeName][key.name]
 		if (key.isList && key.kind === 'object') {
 			return acc
-		} else if (
-			key.kind === 'object' &&
-			inputTypes[routeName][key.name]?.type === 'select'
-		) {
+		} else if (key.kind === 'object' && typeKey?.type === 'select') {
 			acc[key.name] = {
-				select: { [inputTypes[routeName][key.name]?.label]: true },
+				select: { id: true, [typeKey?.label]: true },
 			}
 		} else {
 			acc[key.name] = true
@@ -454,8 +476,7 @@ export const getRouteNameSelectorList = (routeName: string) => {
 	let fieldList = []
 	if (fields) {
 		for (const key of fields) {
-			if (key.name === 'percentage_of') continue
-			if (key.name === 'percentage_on') continue
+			if (noTabList[routeName]?.includes(key.name)) continue
 			if (key.kind === 'object' && key.isList) fieldList.push(key.name)
 		}
 	}

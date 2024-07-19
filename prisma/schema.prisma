@@ -18,44 +18,40 @@ model Company {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  project  Project[]
+  employee Employee[]
   user     User[]
+  vehicle  Vehicle[]
   document Document[]
   bill     Bill[]
+  value    Value[]
 }
 
 model Project {
   id            String    @id @default(cuid())
-  name          String
+  name          String    @unique
   starting_date DateTime
   ending_date   DateTime?
   created_at    DateTime  @default(now())
   updated_at    DateTime  @updatedAt
 
-  company_id String?
-  company    Company? @relation(fields: [company_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
-
-  project_location Project_Location[]
-  user             User[]
-  document         Document[]
-  bill             Bill[]
-
-  @@unique([company_id, name])
+  employee Employee[]
+  user     User[]
+  document Document[]
+  bill     Bill[]
+  vehicle  Vehicle[]
+  value    Value[]
 }
 
 model Project_Location {
-  id             String   @id @default(cuid())
-  street_address String?
-  city           String
-  state          String?
-  postal_code    Int?
-  country        String   @default("India")
-  esic_code      String?
-  created_at     DateTime @default(now())
-  updated_at     DateTime @updatedAt
-
-  project_id String?
-  project    Project? @relation(fields: [project_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  id          String   @id @default(cuid())
+  district    String
+  city        String
+  state       String
+  postal_code Int?     @unique
+  country     String   @default("India")
+  esic_code   String?  @unique
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
 
   employee      Employee[]
   vehicle       Vehicle[]
@@ -63,8 +59,6 @@ model Project_Location {
   payment_field Payment_Field[]
   document      Document[]
   bill          Bill[]
-
-  @@unique([project_id, city])
 }
 
 model Employee {
@@ -90,13 +84,16 @@ model Employee {
   created_at        DateTime  @default(now())
   updated_at        DateTime  @updatedAt
 
+  company_id          String?
+  company             Company?          @relation(fields: [company_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  project_id          String?
+  project             Project?          @relation(fields: [project_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
   project_location_id String?
   project_location    Project_Location? @relation(fields: [project_location_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
   attendance      Attendance[]
   bank_detail     Bank_Details?
   advance_payment Advance_Payment[]
-  payment_data    Payment_Data[]
   vehicle         Vehicle?
   document        Document[]
   bill            Bill[]
@@ -124,28 +121,43 @@ model Attendance {
 
   employee_id String?
   employee    Employee? @relation(fields: [employee_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
-
-  payment_data Payment_Data[]
 }
 
 model Payment_Field {
-  id                   String          @id @default(cuid())
-  name                 String          @unique
+  id                   String   @id @default(cuid())
+  name                 String   @unique
   description          String?
-  type                 String?
-  skill_type           String          @default("all")
-  value                Float?
-  value_type           String          @default("daily")
   sort_index           Int?
-  is_deduction         Boolean         @default(false)
-  service_charge_field Boolean         @default(false)
-  created_at           DateTime        @default(now())
-  updated_at           DateTime        @updatedAt
-  percentage_of        Payment_Field[] @relation("PercentageOf")
-  percentage_on        Payment_Field[] @relation("PercentageOf")
+  is_deduction         Boolean  @default(false)
+  service_charge_field Boolean  @default(false)
+  created_at           DateTime @default(now())
+  updated_at           DateTime @updatedAt
 
+  percentage_of Payment_Field[] @relation("percentage_of")
+  is_percentage Payment_Field[] @relation("percentage_of")
+
+  value            Value[]
   project_location Project_Location[]
-  payment_data     Payment_Data[]
+}
+
+model Value {
+  id         String   @id @default(cuid())
+  value      Float
+  max_value  Float?
+  type       String   @default("fixed")
+  value_type String   @default("daily")
+  skill_type String   @default("all")
+  month      Int
+  year       Int
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  payment_field_id String
+  payment_field    Payment_Field @relation(fields: [payment_field_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  company          Company[]
+  project          Project[]
+
+  @@unique([payment_field_id, month, year, value])
 }
 
 model User {
@@ -177,22 +189,6 @@ model User_Role {
   updated_at DateTime @updatedAt
 
   user User[]
-}
-
-model Payment_Data {
-  id         String   @id @default(cuid())
-  amount     Float
-  month      Int
-  year       Int
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-
-  employee_id      String?
-  employee         Employee?      @relation(fields: [employee_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
-  payment_field_id String?
-  payment_field    Payment_Field? @relation(fields: [payment_field_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
-
-  attendance Attendance[]
 }
 
 model Advance_Payment {
@@ -261,6 +257,10 @@ model Vehicle {
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
 
+  company_id          String?
+  company             Company?          @relation(fields: [company_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  project_id          String?
+  project             Project?          @relation(fields: [project_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
   project_location_id String?
   project_location    Project_Location? @relation(fields: [project_location_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
   employee_id         String?           @unique
