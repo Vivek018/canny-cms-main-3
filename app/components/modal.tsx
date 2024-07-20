@@ -27,7 +27,7 @@ export function Modal({
 	return (
 		<div
 			className={cn(
-				'min-w-screen absolute inset-0 z-30 grid min-h-screen place-items-end',
+				'max-w-screen absolute inset-0 z-30 grid h-full max-h-screen place-items-end overflow-hidden',
 				inMiddle && 'place-items-center',
 				modalClassName,
 			)}
@@ -37,7 +37,7 @@ export function Modal({
 				relative="path"
 				replace={true}
 				className={cn(
-					'min-w-screen absolute inset-0 z-30 grid h-full min-h-screen w-full place-items-end bg-transparent/70 text-transparent',
+					'max-w-screen absolute inset-0 z-30 grid h-full max-h-screen w-full place-items-end bg-transparent/70 text-transparent',
 					inMiddle && 'place-items-center',
 				)}
 				onClick={() => {
