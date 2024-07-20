@@ -27,8 +27,6 @@ export async function extraFilterAction({ request }: ActionFunctionArgs) {
 	const month = formData.get('month')
 	const year = formData.get('year')
 
-	console.log(company, project, month, year)
-
 	const first = formData.get('first')
 	const prev = formData.get('prev')
 	const next = formData.get('next')

@@ -1,6 +1,6 @@
 import { Form } from '@remix-run/react'
 import { PaginationButtons } from '@/components/pagination-buttons'
-import { getTableHeaders, months, transformPaymentData } from '@/utils/misx'
+import { getTableHeaders, transformPaymentData } from '@/utils/misx'
 import { columns } from '../../columns'
 import { DataTable } from '../../data-table'
 
@@ -23,30 +23,7 @@ export const PaymentDataForProjectLocationList = ({
 	routeName,
 	pageSize,
 }: AttendanceListProps) => {
-	let employeeData = data.employee.map((employee: any) => ({
-		...employee,
-		month: months.find(m => m.value === month)?.label,
-		year,
-	}))
-
-	for (let i = 0; i < employeeData.length; i++) {
-		const paymentFieldData = employeeData[0].project_location.payment_field
-
-		for (let j = 0; j < paymentFieldData.length; j++) {
-			employeeData[i][paymentFieldData[j].name] =
-				paymentFieldData[j].value.length && employeeData[i].attendance.length
-					? transformPaymentData({
-							employee: {
-								company_id: employeeData[i].company_id,
-								project_id: employeeData[i].project_id,
-								skill_type: employeeData[i].skill_type,
-							},
-							payment_field: paymentFieldData[j],
-							attendance: employeeData[i].attendance,
-						})
-					: 0
-		}
-	}
+	const employeeData = transformPaymentData({ data, month, year });
 
 	const datasHeader = employeeData
 		? getTableHeaders(employeeData, [

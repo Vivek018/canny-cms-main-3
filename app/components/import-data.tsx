@@ -30,7 +30,7 @@ export function ImportData({
 	return (
 		<Modal
 			inMiddle
-			link={`/${master}?imported=true`}
+			link={`${master}?imported=true`}
 			iconClassName="hidden"
 			className={cn(
 				'my-10 flex max-h-[700px] max-w-[80%] flex-col gap-2 overflow-scroll rounded-md bg-muted p-4 text-muted-foreground',
@@ -62,7 +62,7 @@ export function ImportData({
 			<Form
 				method="POST"
 				id="import-form"
-				action={action ?? `/${master}/import-data`}
+				action={action}
 				className="no-scrollbar relative overflow-scroll rounded-md"
 			>
 				<input type="hidden" name={'headers'} value={header} />
@@ -84,7 +84,7 @@ export function ImportData({
 					<TableBody>
 						{body ? (
 							body?.map((row, index) => (
-								<>
+								<div key={index}>
 									<input type="hidden" name={'row'} value={row} />
 									<TableRow key={index}>
 										{row.map((cell, index) => {
@@ -95,7 +95,7 @@ export function ImportData({
 											)
 										})}
 									</TableRow>
-								</>
+								</div>
 							))
 						) : (
 							<TableRow>

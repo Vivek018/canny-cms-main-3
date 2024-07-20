@@ -176,7 +176,7 @@ export function RadioField({
 			)}
 		>
 			<h1 className={cn('w-full text-start text-sm font-medium capitalize')}>
-				{replaceUnderscore(name?.split(' ')[0])}
+				{replaceUnderscore(name?.replace(/[0-9]/g, ''))}
 			</h1>
 			<div
 				className={cn(
@@ -363,7 +363,7 @@ export function SelectorField({
 									</p>
 								))}
 					</span>
-					<Icon name="triangle-down" size="md" className='flex-shrink-0' />
+					<Icon name="triangle-down" size="md" className="flex-shrink-0" />
 				</DetailsMenuTrigger>
 				<DetailsPopup className={cn('z-50 w-96')}>
 					<Command>

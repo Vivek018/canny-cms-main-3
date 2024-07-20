@@ -1,14 +1,9 @@
 import {
-  type ActionFunctionArgs,
+	type ActionFunctionArgs,
 	json,
 	type LoaderFunctionArgs,
 } from '@remix-run/node'
-import {
-	Form,
-	Link,
-	useLoaderData,
-	useSearchParams,
-} from '@remix-run/react'
+import { Form, Link, useLoaderData, useSearchParams } from '@remix-run/react'
 import { useEffect, useState } from 'react'
 import { useCSVDownloader, useCSVReader } from 'react-papaparse'
 import { ExtraFilter } from '@/components/extra-filter'
@@ -37,10 +32,8 @@ const name = 'attendances'
 export async function loader({
 	request,
 	params,
-	employees,
 	getAttendance,
 }: LoaderFunctionArgs & {
-	employees?: any
 	getAttendance?: boolean
 }) {
 	const url = new URL(request.url)
@@ -161,6 +154,7 @@ export async function loader({
 
 	const imported = url.searchParams.get('imported') ?? 'false'
 
+	url.searchParams.delete('employee')
 	const searchParams = url.searchParams.toString()
 
 	return json({
@@ -169,7 +163,6 @@ export async function loader({
 		month,
 		year,
 		page,
-		employees,
 		master,
 		route,
 		loaderSearchParams: searchParams,
@@ -230,10 +223,10 @@ export default function IndexAttendance() {
 	if (importData && importData.length) {
 		children = (
 			<ImportData
-				master={master + `/${route}/attendance`}
+				master={`/${master}/${route}/attendance`}
 				header={importData[0]}
 				body={importData.slice(1)}
-				action={`${master}/${route}/attendance`}
+				action={`/${master}/${route}/import-attendance`}
 				setImportData={setImportData}
 			/>
 		)

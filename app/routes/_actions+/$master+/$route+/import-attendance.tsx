@@ -18,7 +18,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
 export async function action({ request, params }: ActionFunctionArgs) {
 	const master = params.master
 	const formData = await request.formData()
-
+ 
 	const values: any = []
 	const headers = formData.get('headers')?.toString().split(',') ?? []
 	const body = formData.getAll('row')

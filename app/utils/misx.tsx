@@ -287,14 +287,15 @@ export const flattenObject = ({
 	prefix = '',
 	ignore = [],
 }: {
-	obj: any
+	obj: { [key: string]: any }
 	prefix?: string
-	ignore?: any
+	ignore?: string[]
 }) => {
 	const flattenedObj: any = {}
 	for (const key in obj) {
-		if (key === 'id' || ignore.includes(key)) continue
-		if (typeof obj[key] === 'object' && obj[key] !== null) {
+		if (key?.includes('id') || ignore?.includes(key) || obj[key] === null) {
+			continue
+		} else if (typeof obj[key] === 'object' && obj[key] !== null) {
 			const nestedObj = flattenObject({
 				obj: obj[key],
 				prefix: `${prefix}${key}.`,
@@ -307,6 +308,11 @@ export const flattenObject = ({
 			}
 		} else {
 			flattenedObj[`${prefix}${key}`] = obj[key]
+		}
+	}
+	for (const key in flattenedObj) {
+		if (!isNaN(Number(key)) || ignore.includes(key)) {
+			delete flattenedObj[key]
 		}
 	}
 	return flattenedObj
@@ -384,11 +390,7 @@ export const transformAttendance = ({
 					}
 				}
 			} else {
-				if (new Date(`${month}/${j + 1}/${year}`).getDay() === 0) {
-					innerData[dateString] = 'H'
-				} else {
-					innerData[dateString] = 'A'
-				}
+				innerData[dateString] = 'A'
 			}
 		}
 		returnData.push(innerData)
@@ -397,7 +399,7 @@ export const transformAttendance = ({
 	return returnData.flat()
 }
 
-export const transformPaymentData = ({
+export const extractPaymentData = ({
 	employee,
 	payment_field,
 	attendance,
@@ -444,7 +446,9 @@ export const transformPaymentData = ({
 	attendance: { present: boolean; holiday: boolean; no_of_hours: number }[]
 }) => {
 	let value = 0
-	const { normalPresentDays, overtimeDays } = getAttendanceDays({ attendance })
+	const { normalPresentDays, overtimeDays } = getAttendanceDays({
+		attendance,
+	})
 
 	const paymentFieldValues = payment_field.value
 	if (paymentFieldValues.length) {
@@ -468,7 +472,7 @@ export const transformPaymentData = ({
 									100,
 								payment_field.percentage_of.reduce(
 									(total, percentage_payment_field̉) => {
-										const percentageValue = transformPaymentData({
+										const percentageValue = extractPaymentData({
 											employee,
 											payment_field: percentage_payment_field̉,
 											attendance,
@@ -502,4 +506,40 @@ export const transformPaymentData = ({
 	}
 
 	return value
+}
+
+export const transformPaymentData = ({
+	data,
+	month,
+	year,
+}: {
+	data: any
+	month: string
+	year: string
+}) => {
+	let employeeData = data?.employee?.map((employee: any) => ({
+		...employee,
+		month: months?.find(m => m.value === month)?.label,
+		year,
+	}))
+
+	for (let i = 0; i < employeeData?.length; i++) {
+		const paymentFieldData = employeeData[0].project_location.payment_field
+
+		for (let j = 0; j < paymentFieldData.length; j++) {
+			employeeData[i][paymentFieldData[j].name] =
+				paymentFieldData[j].value.length && employeeData[i].attendance.length
+					? extractPaymentData({
+							employee: {
+								company_id: employeeData[i].company_id,
+								project_id: employeeData[i].project_id,
+								skill_type: employeeData[i].skill_type,
+							},
+							payment_field: paymentFieldData[j],
+							attendance: employeeData[i].attendance,
+						})
+					: 0
+		}
+	}
+	return employeeData
 }

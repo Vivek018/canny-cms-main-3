@@ -24,7 +24,6 @@ export function DocumentPage({
 	routeName,
 }: DocumentProps) {
 	const file = data[imageFieldName[routeName]] ?? NO_IMAGE
-	console.log(file)
 	const fileType = file?.split('.')[file.split('.').length - 1]
 
 	const options = useMemo(

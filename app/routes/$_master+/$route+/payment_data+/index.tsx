@@ -20,7 +20,7 @@ import {
 } from '@/constant'
 import { useIsDocument } from '@/utils/clients/is-document'
 import { useMouseEvent } from '@/utils/clients/mouse-event'
-import { cn, transformAttendance } from '@/utils/misx'
+import { cn, flattenObject, transformPaymentData } from '@/utils/misx'
 import { getData } from '@/utils/servers/data.server'
 import { prisma } from '@/utils/servers/db.server'
 import { companies, projects } from '@/utils/servers/list.server'
@@ -183,35 +183,18 @@ export async function loader({
 		count = paymentDataListCount
 
 		if (url.searchParams.get('export') === 'true') {
-			exportData = await prisma.employee.findMany({
-				select: {
-					full_name: true,
-					attendance: {
-						select: {
-							id: true,
-							date: true,
-							holiday: true,
-							present: true,
-							no_of_hours: true,
-						},
-						where: {
-							date: {
-								gte: new Date(`${month}/1/${year}`),
-								lte: new Date(`${month}/31/${year}`),
-							},
-						},
-					},
-				},
-				where: {
-					[`${singleRouteName[master!].toLowerCase()}_id`]:
-						paymentDataListData.id,
-					AND: [
-						company_id ? { company_id: company_id } : {},
-						project_id ? { project_id: project_id } : {},
-					],
-				},
-				take: MAX_DATA_LENGTH * 2,
-			})
+			exportData = (await getData({
+				master: name,
+				url: request.url,
+				take: Math.min(MAX_DATA_LENGTH, count),
+			})(
+				month,
+				year,
+				route,
+				singleRouteName[master!],
+				company_id,
+				project_id,
+			)) as any
 		}
 	}
 
@@ -225,7 +208,7 @@ export async function loader({
 		master,
 		companyList,
 		projectList,
-		exportData,
+		exportData: exportData?.data,
 	})
 }
 
@@ -252,12 +235,22 @@ export default function IndexPaymentData() {
 		searchParam,
 		setSearchParam,
 	})
-	const [flattenData, setFlattenData] = useState<any>(exportData)
+	const [flattenData, setFlattenData] = useState<any>()
 
 	const { isDocument } = useIsDocument()
 
 	useEffect(() => {
-		setFlattenData(() => transformAttendance({ data: exportData, month, year }))
+		if (exportData) {
+			setFlattenData(() =>
+				transformPaymentData({ data: exportData, month, year }).map(
+					(value: any) =>
+						flattenObject({
+							obj: value,
+							ignore: ['id', 'attendance', 'percentage_of', 'value'],
+						}),
+				),
+			)
+		}
 	}, [exportData, year, month])
 
 	let children = null
@@ -295,8 +288,8 @@ export default function IndexPaymentData() {
 						projectList={projectList}
 						month={month}
 						year={year}
-            searchParam={searchParam}
-            setSearchParam={setSearchParam}
+						searchParam={searchParam}
+						setSearchParam={setSearchParam}
 					/>
 					<Button
 						variant="secondary"

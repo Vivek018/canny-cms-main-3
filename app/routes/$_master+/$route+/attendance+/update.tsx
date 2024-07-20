@@ -19,37 +19,15 @@ import {
 	booleanArray,
 	defaultMonth,
 	defaultYear,
-	MAX_DATA_LENGTH,
 	NORMAL_DAY_HOURS,
-	singleRouteName,
 	weekdays,
 } from '@/constant'
-import { useIsomorphicLayoutEffect } from '@/utils/clients/isomorphic-layout-effect'
 import { cn, getYears, months } from '@/utils/misx'
 import { prisma } from '@/utils/servers/db.server'
 import { loader as indexLoader } from './index'
 
 export async function loader(args: LoaderFunctionArgs) {
-	const master = args.params._master
-	const url = new URL(args.request.url)
-	const month = url.searchParams.get('month') ?? defaultMonth
-	const year = url.searchParams.get('year') ?? defaultYear
-
-	let employees = null
-
-	if (master !== 'employees') {
-		employees = await prisma.employee.findMany({
-			select: { id: true, full_name: true },
-			where: {
-				[singleRouteName[master!].toLowerCase() + '_id']: args.params.route,
-				joining_date: {
-					lte: new Date(`${month}/31/${year}`),
-				},
-			},
-			take: MAX_DATA_LENGTH,
-		})
-	}
-	return indexLoader({ ...args, employees, getAttendance: true })
+	return indexLoader({ ...args, getAttendance: true })
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
@@ -103,58 +81,23 @@ export async function action({ request, params }: ActionFunctionArgs) {
 type UpdateAttendanceProps = {}
 
 export default function UpdateAttendance({}: UpdateAttendanceProps) {
-	const {
-		data,
-		month,
-		year,
-		master,
-		employees,
-		route,
-		loaderSearchParams,
-	}: any = useLoaderData<typeof loader>()
+	const { data, month, year, master, route, loaderSearchParams }: any =
+		useLoaderData<typeof loader>()
 
 	const [searchParam, setSearchParam] = useSearchParams()
 	const [values, setValues] = useState<any>({})
-
-	useIsomorphicLayoutEffect(() => {
-		if (
-			(master !== 'employees' &&
-				employees.length > 0 &&
-				searchParam.get('employee') === null) ||
-			searchParam.get('employee') === undefined
-		) {
-			searchParam.set('employee', employees[0].id)
-			setSearchParam(searchParam)
-		}
-	}, [employees, master, searchParam, setSearchParam])
 
 	const monthList = months
 	const yearList = getYears(10)
 	const date = new Date(parseInt(year), parseInt(month), 0)
 	const totalDays = date.getDate()
+	const commonClassName = 'w-40 md:w-28'
 
 	let children = null
 
 	if (master !== 'employees') {
 		children = (
 			<div className="my-6 flex justify-between gap-4">
-				<DetailsSelector
-					label="id"
-					showLabel="full_name"
-					list={employees}
-					name="employee"
-					noNone={true}
-					defaultValue={employees[0].id}
-					onChange={(e: any) => {
-						searchParam.set('employee', e.target.value)
-						setSearchParam(searchParam)
-					}}
-					noLabel={true}
-					className="w-min"
-					triggerClassName="w-[290px]"
-					length={20}
-					popClassName="w-[290px]"
-				/>
 				<div className="flex gap-4">
 					<DetailsSelector
 						label="value"
@@ -194,7 +137,10 @@ export default function UpdateAttendance({}: UpdateAttendanceProps) {
 
 	return (
 		<Modal
-			className={cn('w-[70%]', data === null && 'hidden')}
+			className={cn(
+				'sm:w-full lg:w-[90%] xl:w-[80%] 2xl:w-[70%]',
+				data === null && 'hidden',
+			)}
 			link={`/${master}/${route}/attendance?${loaderSearchParams}`}
 			shouldNotNavigate={true}
 		>
@@ -216,7 +162,7 @@ export default function UpdateAttendance({}: UpdateAttendanceProps) {
 				<Form method="POST">
 					<div
 						className={cn(
-							'grid min-h-[450px] auto-rows-auto grid-cols-7 items-center justify-between gap-x-4 gap-y-6 py-1.5',
+							'grid min-h-[450px] auto-rows-auto grid-cols-3 items-center justify-between gap-x-2 gap-y-4 py-1.5 md:grid-cols-5 lg:grid-cols-7',
 						)}
 					>
 						{Array.from({ length: totalDays }).map((_, index) => {
@@ -268,7 +214,7 @@ export default function UpdateAttendance({}: UpdateAttendanceProps) {
 									<Field
 										className="mt-4"
 										labelProps={{ children: 'Hours' }}
-										inputClassName="w-24"
+										inputClassName={commonClassName}
 										inputProps={{
 											name: `no_of_hours${index}`,
 											min: 0,
@@ -306,7 +252,7 @@ export default function UpdateAttendance({}: UpdateAttendanceProps) {
 														? 'false'
 														: 'true'
 										}
-										className="w-24"
+										className={commonClassName}
 										isNotId
 									/>
 									<RadioField
@@ -319,7 +265,7 @@ export default function UpdateAttendance({}: UpdateAttendanceProps) {
 												? String(dateData?.holiday)
 												: 'false'
 										}
-										className="w-24"
+										className={commonClassName}
 										isNotId
 									/>
 								</div>
