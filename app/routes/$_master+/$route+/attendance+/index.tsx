@@ -147,6 +147,7 @@ export async function loader({
 						project_id ? { project_id: project_id } : {},
 					],
 				},
+				orderBy: [{ created_at: 'desc' }, { id: 'desc' }] as unknown as any,
 				take: MAX_DATA_LENGTH * 2,
 			})
 		}
@@ -177,7 +178,7 @@ export async function action(args: ActionFunctionArgs) {
 	return extraFilterAction(args)
 }
 
-export default function IndexAttendance() {
+export default function IndexRouteAttendance() {
 	const {
 		data,
 		count,
@@ -197,7 +198,7 @@ export default function IndexAttendance() {
 	const { CSVReader } = useCSVReader()
 
 	const [searchParam, setSearchParam] = useSearchParams()
-	const { handleMouseEnter, handleMouseLeave } = useMouseEvent({
+	const { handleEnter, handleLeave } = useMouseEvent({
 		searchParam,
 		setSearchParam,
 	})
@@ -302,12 +303,10 @@ export default function IndexAttendance() {
 							<Button
 								variant="accent"
 								className="h-full gap-2 rounded-sm px-3"
-								onMouseEnter={handleMouseEnter}
-								onMouseLeave={handleMouseLeave}
-								onFocus={() => {
-									searchParam.set('export', 'true')
-									setSearchParam(searchParam)
-								}}
+								onMouseEnter={handleEnter}
+								onMouseLeave={handleLeave}
+								onFocus={handleEnter}
+								onBlur={handleLeave}
 							>
 								<CSVDownloader
 									className="flex items-center gap-2"

@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client'
 import { z } from 'zod'
-import { noTabList, singleRouteName } from '@/constant'
+import { noTabList, routeObjectTitle, singleRouteName } from '@/constant'
 import { inputTypes } from '@/utils/input-types'
 import { capitalizeFirstLetter, formatDate, hasId, isTitle } from './misx'
 
@@ -37,10 +37,10 @@ const vehicleTypeEnum = [
 const belongsToEnum = [
 	'company',
 	'project',
-	'project location',
+	'project_location',
 	'employee',
 	'vehicle',
-] as readonly ['company', 'project', 'project location', 'employee', 'vehicle']
+] as readonly ['company', 'project', 'project_location', 'employee', 'vehicle']
 
 const zString = z
 	.string()
@@ -152,6 +152,7 @@ export const Schemas: { [key: string]: any } = {
 			)
 			.optional(),
 		address: zTextArea.optional(),
+		project: z.array(zNumberString).optional(),
 	}),
 	[singleRouteName.employees]: z.object({
 		id: z.string().optional(),
@@ -177,25 +178,26 @@ export const Schemas: { [key: string]: any } = {
 		mobile: zNumber.min(10).max(10).optional(),
 		joining_date: z
 			.date()
-			.min(new Date('1980-01-01'))
+			.min(new Date('1960-01-01'))
 			.max(new Date())
 			.default(new Date()),
-		exit_date: z.date().min(new Date('1980-01-01')).max(new Date()).optional(),
+		exit_date: z.date().min(new Date('1960-01-01')).max(new Date()).optional(),
 		aadhar_number: zNumber.min(12).max(12).optional(),
 		pan_number: zNumberString.min(8).max(12).optional(),
 		permanent_address: zTextArea.optional(),
 		bank_detail_id: z.string().optional(),
 		account_number: zNumber.min(8).max(16).optional(),
 		ifsc_code: zNumberString.min(8).max(16).optional(),
+		value: z.array(zNumberString).optional(),
 	}),
 	[singleRouteName.advances]: z.object({
 		id: z.string().optional(),
 		label: zNumberString,
 		amount: z.number().int().min(1),
 		credited: z.enum(booleanEnum).default('false'),
-		user: z.string().optional(),
+		user: zNumberString.optional(),
 		project: zNumberString.optional(),
-		employee: z.string().optional(),
+		employee: zNumberString.optional(),
 		payment_date: z.date().max(new Date()).default(new Date()),
 		confirmation_document: zFile,
 	}),
@@ -204,6 +206,8 @@ export const Schemas: { [key: string]: any } = {
 		name: zNumberString,
 		starting_date: z.date().default(new Date()),
 		ending_date: z.date().optional(),
+		company: z.array(zNumberString).optional(),
+		project_location: z.array(zNumberString).optional(),
 	}),
 	[singleRouteName.project_locations]: z.object({
 		id: z.string().optional(),
@@ -213,14 +217,16 @@ export const Schemas: { [key: string]: any } = {
 		postal_code: z.number().min(1000).max(9999999).optional(),
 		esic_code: zNumberString.max(20).optional(),
 		payment_field: z.array(zNumberString).optional(),
+		project: z.array(zNumberString).optional(),
 	}),
 	[singleRouteName.payment_fields]: z.object({
 		id: z.string().optional(),
 		name: zNumberString,
 		description: zTextArea.max(1000).optional(),
-		sort_index: zNumber.optional(),
+		sort_id: zNumber.min(0).max(50).optional(),
 		is_deduction: z.enum(booleanEnum).default('false'),
-		service_charge_field: z.enum(booleanEnum).default('false'),
+		is_statutory: z.enum(booleanEnum).default('false'),
+		eligible_after_years: z.number().default(0),
 		percentage_of: z.array(zNumberString).optional(),
 		project_location: z.array(zNumberString).optional(),
 	}),
@@ -229,23 +235,19 @@ export const Schemas: { [key: string]: any } = {
 		name: zString,
 		number: zNumberString,
 		type: z.enum(vehicleTypeEnum).default('car'),
-		year_bought: z.number().int().min(1980).max(new Date().getFullYear()),
+		year_bought: z.number().int().min(1960).max(new Date().getFullYear()),
 		company: zNumberString,
 		project: zNumberString,
 		project_location: zNumberString,
 		employee: zNumberString.optional(),
-		kms_driven: z.number().int().min(1).max(10000000).optional(),
+		total_kms_driven: z.number().int().min(1).max(10000000).optional(),
 		status: z.enum(statusEnum).default('active'),
 		price: z.number().int().min(1000).max(100000000).optional(),
 		other_details: zTextArea.optional(),
 	}),
-	value: z.object({
+	[singleRouteName.vehicle_monthly]: z.object({
 		id: z.string().optional(),
-		value: z.number().min(0).max(10000000),
-		max_value: z.number().min(0).max(10000000).optional(),
-		type: z.enum(['fixed', 'percentage']).default('fixed'),
-		value_type: z.enum(['daily', 'monthly', 'overtime']).default('daily'),
-		skill_type: z.enum([...skillTypesEnum, 'all']).default('all'),
+		kms_driven: z.number().int().min(1).max(10000000),
 		month: z
 			.number()
 			.int()
@@ -255,9 +257,23 @@ export const Schemas: { [key: string]: any } = {
 		year: z
 			.number()
 			.int()
-			.min(1980)
+			.min(1960)
 			.max(new Date().getFullYear())
 			.default(new Date().getFullYear()),
+		vehicle: zNumberString.optional(),
+	}),
+	[singleRouteName.value]: z.object({
+		id: z.string().optional(),
+		value: z.number().min(0).max(10000000),
+		max_value: z.number().min(0).max(10000000).optional(),
+		type: z.enum(['fixed', 'percentage']).default('fixed'),
+		value_type: z
+			.enum(['daily', 'monthly', 'yearly', 'overtime', 'n/a'])
+			.default('daily'),
+		skill_type: z.enum([...skillTypesEnum, 'all']).default('all'),
+		pay_at_once: z.enum(booleanEnum).default('false'),
+		month: z.number().int().min(1).max(12),
+		year: z.number().int().min(1960).max(new Date().getFullYear()),
 		payment_field: zNumberString.optional(),
 		company: z.array(zNumberString).optional(),
 		project: z.array(zNumberString).optional(),
@@ -313,15 +329,15 @@ export const getSelectorValues = (
 
 	for (const key in Schemas[routeName].shape) {
 		const typeKey = inputTypes[routeName][key]
-		if (key === 'id' || !values[key] || typeKey?.ignore) continue
-		else if (typeKey?.type === 'radio') {
+		if (key === 'id' || typeKey?.ignore) continue
+		else if (typeKey?.type === 'radio' && values[key]) {
 			const isBoolean = values[key] === 'true' || values[key] === 'false'
 			if (isBoolean) {
 				selectorValues[key] = values[key] === 'true' ? true : false
 			} else {
 				selectorValues[key] = values[key]
 			}
-		} else if (typeKey?.connectOn) {
+		} else if (typeKey?.connectOn && values[key]) {
 			if (key.endsWith('_id')) {
 				selectorValues[typeKey?.connectOn] = update
 					? {
@@ -363,14 +379,14 @@ export const getSelectorValues = (
 
 				selectorValues[key] = {
 					disconnect: disconnectValue[key],
-					connect: values[key].map((value: any) => ({ id: value })),
+					connect: values[key]?.map((value: any) => ({ id: value })),
 				}
 			} else {
 				selectorValues[key] = {
-					connect: values[key].map((value: any) => ({ id: value })),
+					connect: values[key]?.map((value: any) => ({ id: value })),
 				}
 			}
-		} else if (typeKey?.type === 'select') {
+		} else if (typeKey?.type === 'select' && values[key]) {
 			const typeIgnoreKeys = inputTypes[routeName]?.ignoreDependentKeys?.filter(
 				(item: string) => item !== key && !typeKey?.isNeeded?.includes(item),
 			)
@@ -400,11 +416,11 @@ export const getSelectorValues = (
 						}
 			}
 			selectorValues[key] = { connect: { id: values[key] } }
-		} else if (typeKey?.type === 'number') {
+		} else if (typeKey?.type === 'number' && values[key]) {
 			selectorValues[key] = String(values[key])?.includes('.')
 				? parseFloat(values[key])
 				: parseInt(values[key])
-		} else if (typeKey?.type === 'date') {
+		} else if (typeKey?.type === 'date' && values[key]) {
 			const dateObject = formatDate(values[key])
 			selectorValues[key] = dateObject
 		} else {
@@ -442,7 +458,7 @@ export const getRouteNameSelectorHeading = (routeName: string) => {
 	let headingKeys = []
 	if (fields) {
 		for (const key of fields) {
-			if (isTitle(key.name)) headingKeys.push(key.name)
+			if (routeObjectTitle[routeName] === key.name) headingKeys.push(key.name)
 			else if (key.name === 'updated_at') headingKeys.push(key.name)
 		}
 	}

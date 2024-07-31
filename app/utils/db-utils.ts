@@ -4,31 +4,172 @@ import { statesArray, vehicleTypeArray } from './servers/list.server'
 
 export const paymentFields = [
 	{
-		name: 'BASIC',
+		payment_field: {
+			name: 'Basic',
+			sort_id: 0,
+		},
+		value: {
+			value: 540,
+			month: 4,
+			year: 2024,
+			skill_type: 'unskilled',
+		},
 	},
 	{
-		name: 'FIXED ALLOWANCE',
+		payment_field: {
+			name: 'Fixed Allowance',
+			sort_id: 1,
+		},
+		value: {
+			value: 200,
+			month: 4,
+			year: 1960,
+			skill_type: 'all',
+		},
 	},
 	{
-		name: 'OVERTIME ALLOWANCE',
+		payment_field: {
+			name: 'PF',
+			sort_id: 2,
+			is_deduction: true,
+		},
+		value: {
+			value: 13,
+			max_value: 15000,
+			month: 4,
+			year: 1960,
+			type: 'percentage',
+			skill_type: 'all',
+		},
 	},
 	{
-		name: 'PF',
+		payment_field: {
+			name: 'ESIC',
+			sort_id: 3,
+			is_deduction: true,
+		},
+		value: {
+			value: 3.25,
+			month: 4,
+			year: 1960,
+			type: 'percentage',
+			skill_type: 'all',
+		},
+	},
+
+	{
+		payment_field: {
+			name: 'BONUS',
+			sort_id: 4,
+		},
+		value: {
+			value: 8.33,
+			month: 4,
+			year: 1960,
+			type: 'percentage',
+			skill_type: 'all',
+		},
 	},
 	{
-		name: 'ESIC',
+		payment_field: {
+			name: 'Overtime',
+			sort_id: 5,
+		},
+		value: {
+			value: 800,
+			value_type: 'overtime',
+			month: 4,
+			year: 1960,
+			skill_type: 'all',
+		},
 	},
 	{
-		name: 'BONUS',
+		payment_field: {
+			name: 'PT',
+			sort_id: 7,
+			is_deduction: true,
+		},
+		value: {
+			value: 200,
+			value_type: 'monthly',
+			month: 4,
+			year: 1960,
+			skill_type: 'all',
+		},
 	},
 	{
-		name: 'PT',
+		payment_field: {
+			name: 'HRA',
+			sort_id: 8,
+		},
+		value: {
+			value: 6.25,
+			month: 4,
+			year: 1960,
+			type: 'percentage',
+			skill_type: 'all',
+		},
 	},
 	{
-		name: 'HRA',
+		payment_field: {
+			name: 'Gratuity',
+			sort_id: 9,
+			is_deduction: true,
+			is_statutory: true,
+			eligible_after_years: 4.5,
+		},
+		value: {
+			value: 540,
+			month: 4,
+			year: 2024,
+			pay_at_once: true,
+			value_type: 'yearly',
+			skill_type: 'unskilled',
+		},
 	},
 	{
-		name: 'OTHERS',
+		payment_field: {
+			name: 'Leave Encashment',
+			sort_id: 10,
+			is_statutory: true,
+			eligible_after_years: 0.5,
+		},
+		value: {
+			value: 6.67,
+			month: 4,
+			year: 2024,
+			type: 'percentage',
+		},
+	},
+	{
+		payment_field: {
+			name: 'Retrenchment Bonus',
+			sort_id: 11,
+			is_statutory: true,
+			eligible_after_years: 0.5,
+		},
+		value: {
+			value: 540,
+			month: 4,
+			year: 2024,
+			value_type: 'yearly',
+			skill_type: 'unskilled',
+		},
+	},
+	{
+		payment_field: {
+			name: 'LWF',
+			sort_id: 12,
+			is_deduction: true,
+			is_statutory: true,
+		},
+		value: {
+			value: 36,
+			month: 4,
+			year: 2024,
+			value_type: 'monthly',
+			skill_type: 'unskilled',
+		},
 	},
 ]
 
@@ -68,7 +209,10 @@ export function createEmployee() {
 		joining_date: faker.date.past({ years: 10 }),
 		exit_date: faker.date.future(),
 		aadhar_number: faker.string.numeric({ length: 12 }),
-		permanent_address: faker.location.streetAddress(),
+		permanent_address:
+			faker.location.streetAddress() +
+			faker.location.streetAddress() +
+			faker.location.streetAddress(),
 	}
 }
 
@@ -90,7 +234,7 @@ export function createProject() {
 
 export function createProjectLocation() {
 	return {
-		district: faker.location.street(),
+		district: faker.location.street() + faker.location.street().substring(0, 3),
 		city: faker.location.city(),
 		state: statesArray[Math.floor(Math.random() * statesArray.length)].value,
 		postal_code: faker.number.int({ max: 999999 }),
@@ -105,7 +249,7 @@ export function createVehicle() {
 		type: vehicleTypeArray[Math.floor(Math.random() * vehicleTypeArray.length)]
 			.value,
 		year_bought: randomNumber(2000, 2022),
-		kms_driven: randomNumber(0, 200000),
+		total_kms_driven: randomNumber(10000, 200000),
 		price: randomNumber(500000, 5000000),
 		other_details: faker.lorem.sentence(),
 		status: statusArray[Math.floor(Math.random() * statusArray.length)],
@@ -113,21 +257,20 @@ export function createVehicle() {
 }
 export function createUserRoles() {
 	const mainRolesArray = [
-		{ name: 'cms lead' },
-		{ name: 'cms admin' },
-		{ name: 'cms assistant' },
+		{ name: 'cms_lead' },
+		{ name: 'cms_admin' },
+		{ name: 'cms_assistant' },
 		{ name: 'waiting' },
 	]
-	const companyRolesArray = [{ name: 'client lead' }, { name: 'client admin' }]
+	const companyRolesArray = [{ name: 'client_lead' }, { name: 'client_admin' }]
 
 	return [
 		...mainRolesArray,
 		...companyRolesArray,
-		{ name: 'project admin' },
-		{ name: 'project location admin' },
+		{ name: 'project_admin' },
+		{ name: 'project_location_admin' },
 	]
 }
-
 
 export function createUser() {
 	return {

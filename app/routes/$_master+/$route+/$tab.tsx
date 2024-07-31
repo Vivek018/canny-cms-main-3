@@ -3,7 +3,7 @@ import {
 	json,
 	type LoaderFunctionArgs,
 } from '@remix-run/node'
-import { Form, Link, Outlet, redirect, useLoaderData } from '@remix-run/react'
+import { Form, Link, Outlet, useLoaderData } from '@remix-run/react'
 import { useEffect, useState } from 'react'
 import { columns } from '@/components/columns'
 import { DataTable } from '@/components/data-table'
@@ -21,7 +21,7 @@ import {
 	replaceUnderscore,
 } from '@/utils/misx'
 import { getData } from '@/utils/servers/data.server'
-import { prisma } from '@/utils/servers/db.server'
+import { extraFilterAction } from '@/utils/servers/misx.server'
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
 	const normalTab = params.tab ?? ''
@@ -73,39 +73,8 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 	})
 }
 
-export async function action({ request, params }: ActionFunctionArgs) {
-	const url = new URL(request.url)
-	const formData = await request.formData()
-
-	const tab = params.tab as 'user'
-	const ids = formData.getAll('ids')
-
-	for (let i = 0; i < ids.length; i++) {
-		await prisma[capitalizeAfterUnderscore(tab) as 'user'].deleteMany({
-			where: {
-				id: ids[i].toString(),
-			},
-		})
-		url.searchParams.set('page', '1')
-	}
-
-	const first = formData.get('first')
-	const prev = formData.get('prev')
-	const next = formData.get('next')
-	const last = formData.get('last')
-
-	if (first === 'true') {
-		url.searchParams.set('page', '1')
-	} else if (prev) {
-		if (parseInt(prev.toString()) >= 1)
-			url.searchParams.set('page', prev.toString())
-	} else if (next) {
-		url.searchParams.set('page', next.toString())
-	} else if (last) {
-		url.searchParams.set('page', last.toString())
-	}
-
-	return redirect(url.toString())
+export async function action(args: ActionFunctionArgs) {
+	return extraFilterAction(args)
 }
 
 export default function Tab() {
@@ -115,13 +84,15 @@ export default function Tab() {
 	const [rowSelection, setRowSelection] = useState({})
 	const [rows, setRows] = useState<any>()
 
-	const datasHeader = data ? getTableHeaders(data, ['id', singleRouteName[name!]]) : null
+	const datasHeader = data
+		? getTableHeaders(data, ['id', singleRouteName[name!]])
+		: null
 
 	useEffect(() => {
 		setRowSelection({})
 		setRows([])
 		setShowDelete(false)
-	}, [page])
+	}, [page, data])
 
 	return (
 		<div className="h-full pt-3">
@@ -202,7 +173,6 @@ export default function Tab() {
 								headers: datasHeader,
 								name: master,
 								singleRoute: tabMaster,
-								length: 34,
 								page: parseInt(page),
 								pageSize: TAB_PAGE_SIZE,
 							})}

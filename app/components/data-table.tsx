@@ -19,8 +19,8 @@ type DataTableProps<TData> = {
 	data: TData[]
 	rowSelection?: any
 	setRowSelection?: React.Dispatch<React.SetStateAction<any>>
-	setRows: React.Dispatch<React.SetStateAction<any>>
-  className?: string
+	setRows?: React.Dispatch<React.SetStateAction<any>>
+	className?: string
 }
 
 export function DataTable<TData>({
@@ -29,7 +29,7 @@ export function DataTable<TData>({
 	rowSelection,
 	setRowSelection,
 	setRows,
-  className,
+	className,
 }: DataTableProps<TData>) {
 	const table = useReactTable({
 		data,
@@ -44,6 +44,7 @@ export function DataTable<TData>({
 	})
 
 	useEffect(() => {
+		if (setRows === undefined) return
 		if (table.getSelectedRowModel().rows.length) {
 			setRows([])
 			table
@@ -57,16 +58,18 @@ export function DataTable<TData>({
 	}, [rowSelection, setRows, table])
 
 	return (
-		<div className={cn("no-scrollbar relative z-20 min-w-full h-full  overflow-scroll rounded-md", className)}>
-			<Table className='min-w-max'>
+		<div
+			className={cn(
+				'no-scrollbar relative z-20 h-full min-w-full overflow-scroll rounded-md',
+				className,
+			)}
+		>
+			<Table className="min-w-max">
 				<TableHeader>
 					{table.getHeaderGroups().map(headerGroup => (
 						<TableRow key={headerGroup.id} className="">
 							{headerGroup.headers.map(header => (
-								<TableHead
-									key={header.id}
-									className="py-3 capitalize"
-								>
+								<TableHead key={header.id} className="py-3 capitalize">
 									{header.isPlaceholder
 										? null
 										: flexRender(

@@ -22,7 +22,7 @@ export function DetailsData({
 	data,
 }: DetailsDataProps) {
 	return (
-		<div className={cn('my-10 grid grid-cols-3 gap-10', className)}>
+		<div className={cn('my-10 grid grid-cols-3 gap-x-10 gap-y-8', className)}>
 			{keys.map((val: any) => {
 				if (
 					val === imageField ||

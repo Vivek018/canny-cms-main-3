@@ -14,7 +14,7 @@ import { letterTypesInputList } from '@/utils/pdf-list'
 import { pdfData, pdfInputList } from '@/utils/servers/pdf-list.server'
 
 export async function loader({ params }: LoaderFunctionArgs) {
-	const master = params._master! as string;
+	const master = params._master! as string
 	const route = params.route!
 	const routeName = singleRouteName[master] as 'employee'
 	const type = params.type!
@@ -25,9 +25,13 @@ export async function loader({ params }: LoaderFunctionArgs) {
 			? await pdfInputList[master][params.type!]()
 			: null
 		: null
-	// this being null is very important
 
+	// this being null is very important
 	const data = await pdfData[master]({ type: type, id: route })
+
+	if (list && list.no_address === true) {
+		data.no_address = true
+	}
 
 	return json({
 		master: master,
@@ -69,6 +73,7 @@ export default function Letter() {
 			? letterTypesInputList[master][type]
 			: null
 	const data = { ...loaderData, ...actionData?.actionData }
+
 	let address = null
 	if (master === 'employees') {
 		address = data?.permanent_address

@@ -80,7 +80,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
 type UpdateAttendanceProps = {}
 
-export default function UpdateAttendance({}: UpdateAttendanceProps) {
+export default function UpdateRouteAttendance({}: UpdateAttendanceProps) {
 	const { data, month, year, master, route, loaderSearchParams }: any =
 		useLoaderData<typeof loader>()
 
@@ -93,47 +93,43 @@ export default function UpdateAttendance({}: UpdateAttendanceProps) {
 	const totalDays = date.getDate()
 	const commonClassName = 'w-40 md:w-28'
 
-	let children = null
-
-	if (master !== 'employees') {
-		children = (
-			<div className="my-6 flex justify-between gap-4">
-				<div className="flex gap-4">
-					<DetailsSelector
-						label="value"
-						list={monthList}
-						name="month"
-						noNone={true}
-						defaultValue={month}
-						onChange={(e: any) => {
-							searchParam.set('month', e.target.value)
-							setSearchParam(searchParam)
-						}}
-						noLabel={true}
-						showLabel="label"
-						className="w-min"
-						triggerClassName="w-[160px]"
-						popClassName="w-[160px]"
-					/>
-					<DetailsSelector
-						label="value"
-						list={yearList}
-						name="year"
-						noNone={true}
-						defaultValue={year}
-						onChange={(e: any) => {
-							searchParam.set('year', e.target.value)
-							setSearchParam(searchParam)
-						}}
-						noLabel={true}
-						className="w-min"
-						triggerClassName="w-24"
-						popClassName="w-20"
-					/>
-				</div>
+	let children = (
+		<div className="my-6 flex justify-between gap-4">
+			<div className="flex gap-4">
+				<DetailsSelector
+					label="value"
+					list={monthList}
+					name="month"
+					noNone={true}
+					defaultValue={month}
+					onChange={(e: any) => {
+						searchParam.set('month', e.target.value)
+						setSearchParam(searchParam)
+					}}
+					noLabel={true}
+					showLabel="label"
+					className="w-min"
+					triggerClassName="w-[160px]"
+					popClassName="w-[160px]"
+				/>
+				<DetailsSelector
+					label="value"
+					list={yearList}
+					name="year"
+					noNone={true}
+					defaultValue={year}
+					onChange={(e: any) => {
+						searchParam.set('year', e.target.value)
+						setSearchParam(searchParam)
+					}}
+					noLabel={true}
+					className="w-min"
+					triggerClassName="w-24"
+					popClassName="w-20"
+				/>
 			</div>
-		)
-	}
+		</div>
+	)
 
 	return (
 		<Modal

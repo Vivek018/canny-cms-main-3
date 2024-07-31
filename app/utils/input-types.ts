@@ -30,6 +30,22 @@ const commonTypes = {
 	employee: {
 		employee: { name: 'employee', label: 'full_name', type: types.select },
 	},
+	vehicle: {
+		vehicle: {
+			name: 'vehicle',
+			label: 'number',
+			type: types.select,
+		},
+	},
+	value: {
+		value: {
+			name: 'value',
+			label: 'value',
+			secondAccess: 'payment_field',
+			secondLabel: 'name',
+			type: types.select,
+		},
+	},
 }
 
 const commonDependedTypes = {
@@ -58,22 +74,22 @@ export const inputTypes: { [key: string]: any } = {
 			...commonTypes.company.company,
 			dependsOn: 'role',
 			dependsValue: [
-				'client lead',
-				'client admin',
-				'project admin',
-				'project location admin',
+				'client_lead',
+				'client_admin',
+				'project_admin',
+				'project_location_admin',
 			],
 		},
 		project: {
 			...commonTypes.project.project,
 			dependsOn: 'role',
-			dependsValue: ['project admin', 'project location admin'],
+			dependsValue: ['project_admin', 'project_location_admin'],
 			isNeeded: ['company'],
 		},
 		project_location: {
 			...commonTypes.project_location.project_location,
 			dependsOn: 'role',
-			dependsValue: ['project location admin'],
+			dependsValue: ['project_location_admin'],
 			isNeeded: ['company', 'project'],
 		},
 	},
@@ -95,18 +111,18 @@ export const inputTypes: { [key: string]: any } = {
 		company: {
 			...commonTypes.company.company,
 			dependsOn: 'belongs_to',
-			dependsValue: ['company', 'project', 'project location'],
+			dependsValue: ['company', 'project', 'project_location'],
 		},
 		project: {
 			...commonDependedTypes.project.project,
 			dependsOn: 'belongs_to',
-			dependsValue: ['project', 'employee', 'vehicle', 'project location'],
+			dependsValue: ['project', 'employee', 'vehicle', 'project_location'],
 			isNeeded: ['company'],
 		},
 		project_location: {
 			...commonTypes.project_location.project_location,
 			dependsOn: 'belongs_to',
-			dependsValue: ['project location'],
+			dependsValue: ['project_location'],
 			isNeeded: ['project', 'company'],
 		},
 		employee: {
@@ -115,23 +131,16 @@ export const inputTypes: { [key: string]: any } = {
 			dependsValue: ['employee'],
 		},
 		vehicle: {
-			name: 'vehicle',
-			label: 'number',
-			type: types.select,
+			...commonTypes.vehicle.vehicle,
 			dependsOn: 'belongs_to',
 			dependsValue: ['vehicle'],
 		},
 	},
 	[singleRouteName.companies]: {
 		photo: { name: 'photo', type: types.file },
-		service_charge: { type: types.number },
-		reimbursement_charge: { type: types.number },
-		service_charge_field: {
-			name: 'service_charge_field',
-			label: 'value',
-			type: types.radio,
-		},
 		address: { name: 'address', type: types.textarea },
+		project: { ...commonTypes.project.project, isMulti: true },
+		value: { ...commonTypes.value.value, isMulti: true },
 	},
 	[singleRouteName.employees]: {
 		photo: { name: 'photo', type: types.file },
@@ -149,6 +158,7 @@ export const inputTypes: { [key: string]: any } = {
 		bank_detail_id: { connectOn: 'bank_detail' },
 		account_number: { type: types.number, connectOn: 'bank_detail' },
 		ifsc_code: { connectOn: 'bank_detail' },
+		value: { ...commonTypes.value.value, isMulti: true },
 	},
 	[singleRouteName.advances]: {
 		amount: { type: types.number },
@@ -162,7 +172,12 @@ export const inputTypes: { [key: string]: any } = {
 	[singleRouteName.projects]: {
 		starting_date: { type: types.date },
 		ending_date: { type: types.date },
-		...commonTypes.company,
+		company: { ...commonTypes.company.company, isMulti: true },
+		project_location: {
+			...commonTypes.project_location.project_location,
+			isMulti: true,
+		},
+		value: { ...commonTypes.value.value, isMulti: true },
 	},
 	[singleRouteName.project_locations]: {
 		street_address: { type: types.textarea },
@@ -174,22 +189,23 @@ export const inputTypes: { [key: string]: any } = {
 			type: types.select,
 			isMulti: true,
 		},
-		...commonTypes.project,
+		project: { ...commonTypes.project.project, isMulti: true },
 	},
 	[singleRouteName.payment_fields]: {
 		description: { type: types.textarea },
 		type: { name: 'type', label: 'value', type: types.radio },
-		sort_index: { type: types.number },
+		sort_id: { type: types.number },
 		is_deduction: {
 			name: 'is_deduction',
 			label: 'value',
 			type: types.radio,
 		},
-		service_charge_field: {
-			name: 'service_charge_field',
+		is_statutory: {
+			name: 'is_statutory',
 			label: 'value',
 			type: types.radio,
 		},
+		eligible_after_years: { type: types.number },
 		percentage_of: {
 			name: 'percentage_of',
 			label: 'name',
@@ -202,7 +218,7 @@ export const inputTypes: { [key: string]: any } = {
 		},
 	},
 	[singleRouteName.vehicles]: {
-		kms_driven: { type: types.number },
+		total_kms_driven: { type: types.number },
 		year_bought: { name: 'year_bought', label: 'value', type: types.radio },
 		price: { type: types.number },
 		type: { name: 'type', label: 'value', type: types.radio },
@@ -213,11 +229,23 @@ export const inputTypes: { [key: string]: any } = {
 		...commonTypes.employee,
 		other_details: { type: types.textarea },
 	},
-	value: {
+	[singleRouteName.vehicle_monthly]: {
+		kms_driven: { type: types.number },
+		month: {
+			name: 'month',
+			showLabel: 'label',
+			label: 'value',
+			type: types.radio,
+		},
+		year: { name: 'year', label: 'value', type: types.radio },
+		...commonTypes.vehicle,
+	},
+	[singleRouteName.value]: {
 		value: { name: 'value', type: types.number },
 		type: { name: 'type', label: 'value', type: types.radio },
 		value_type: { name: 'value_type', label: 'value', type: types.radio },
 		skill_type: { name: 'skill_type', label: 'value', type: types.radio },
+		pay_at_once: { name: 'pay_at_once', label: 'value', type: types.radio },
 		month: {
 			name: 'month',
 			showLabel: 'label',
@@ -238,6 +266,7 @@ export const inputTypes: { [key: string]: any } = {
 			...commonTypes.project.project,
 			isMulti: true,
 		},
+		employee: { ...commonTypes.employee.employee, isMulti: true },
 	},
 }
 

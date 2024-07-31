@@ -12,7 +12,7 @@ import { Header } from '@/components/header'
 import { DocumentPage } from '@/components/page/document'
 import { buttonVariants } from '@/components/ui/button'
 import { Icon } from '@/components/ui/icon'
-import { NO_IMAGE, singleRouteName } from '@/constant'
+import { NO_IMAGE, singleRouteName, tabList } from '@/constant'
 import { useIsDocument } from '@/utils/clients/is-document'
 import { imageFieldName } from '@/utils/input-types'
 import { cn, formatString, replaceUnderscore } from '@/utils/misx'
@@ -24,7 +24,6 @@ import {
 	getRouteNameSelectorList,
 } from '@/utils/schema'
 import { prisma } from '@/utils/servers/db.server'
-import { tabList } from '@/utils/servers/list.server'
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
 	const master = params._master
@@ -60,7 +59,7 @@ export default function Route() {
 
 	let children = (
 		<>
-			<div className="flex w-full items-center justify-between ">
+			<div className="flex w-full -mt-2 items-center justify-between">
 				<div className="flex gap-4">
 					{imageField ? (
 						<Link
@@ -99,7 +98,7 @@ export default function Route() {
 					</Link>
 				) : null}
 			</div>
-			<div className="flex flex-1 flex-col rounded-md py-3.5">
+			<div className="flex flex-1 flex-col rounded-md">
 				<div className="flex gap-1.5 border-b border-accent">
 					<NavLink
 						key={defaultRoute}
@@ -164,8 +163,15 @@ export default function Route() {
 	}
 
 	return (
-		<div className="flex h-full flex-col gap-5">
-			<Header title={routeName} goBackLink={`/${master}`}>
+		<div className="flex h-full flex-col gap-5 py-1">
+			<Header
+				title={routeName}
+				goBackLink={
+					master !== 'value' && master !== 'vehicle_monthly'
+						? `/${master}`
+						: '/'
+				}
+			>
 				<Link
 					to="update"
 					className={buttonVariants({

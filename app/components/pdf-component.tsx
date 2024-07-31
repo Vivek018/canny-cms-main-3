@@ -39,12 +39,28 @@ export const PDF = ({
 									{new Date().toLocaleDateString()}
 								</Text>
 							</View>
-							<Text>To,</Text>
-							<Text>{data.full_name},</Text>
-							<Text style={{ width: 180 }}>
-								{address?.replaceAll(',', ',\n')}
-							</Text>
 						</View>
+						{data.no_address ? (
+							<View style={styles().section}>
+								<Text
+									style={{
+										textAlign: 'center',
+										textTransform: 'capitalize',
+										fontSize: '16',
+									}}
+								>
+									To Whom It May Concern
+								</Text>
+							</View>
+						) : (
+							<View style={{ marginTop: -30, marginBottom: 30 }}>
+								<Text>To,</Text>
+								<Text>{data.full_name},</Text>
+								<Text style={{ width: 180 }}>
+									{address?.replaceAll(',', ',\n')}
+								</Text>
+							</View>
+						)}
 						{pdfTemplates[type as keyof typeof pdfTemplates](data)}
 						<View style={styles().signature}>
 							<Text>Sincerely,</Text>

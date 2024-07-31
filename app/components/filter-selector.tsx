@@ -17,15 +17,7 @@ import { Icon } from './ui/icon'
 import { Input } from './ui/input'
 import { Shortcut } from './ui/shortcut'
 
-export function FilterSelector({
-	name,
-	list,
-	defaultValue,
-}: {
-	name: string
-	list: any
-	defaultValue?: any
-}) {
+export function FilterSelector({ name, list }: { name: string; list: any }) {
 	const [filterFocus, setFilterFocus] = useState(false)
 	const hide =
 		filters[name as keyof typeof filters]().length === 0 ||
@@ -166,7 +158,6 @@ export function DetailsSelector({
 	triggerClassName,
 	popClassName,
 	onChange,
-	length,
 }: {
 	list: any
 	name: string
@@ -179,7 +170,6 @@ export function DetailsSelector({
 	triggerClassName?: string
 	popClassName?: string
 	onChange?: any
-	length?: number
 }) {
 	const [open, setOpen] = useState(false)
 	const { ref: inputRef } = useRefFocus(open)
@@ -191,10 +181,7 @@ export function DetailsSelector({
 	const fullList = noNone
 		? list
 		: list
-			? [
-					{ [showLabel ?? label]: 'none', [label]: 'none' },
-					...list,
-				]
+			? [{ [showLabel ?? label]: 'none', [label]: 'none' }, ...list]
 			: []
 
 	const valueLabel = fullList?.find((value: any) => {
@@ -239,7 +226,7 @@ export function DetailsSelector({
 					>
 						{replaceUnderscore(noValue ? name : valueLabel)}
 					</span>
-					<Icon name="triangle-down" size="md" className='flex-shrink-0' />
+					<Icon name="triangle-down" size="md" className="flex-shrink-0" />
 				</DetailsMenuTrigger>
 				<DetailsPopup className={cn('z-50 w-52', popClassName)}>
 					<Command>
@@ -270,20 +257,20 @@ export function DetailsSelector({
 										>
 											<Icon
 												name="check"
-                        size="sm"
+												size="sm"
 												className={cn(
 													value[showLabel ?? label] === valueLabel
 														? 'opacity-100'
 														: 'opacity-0',
 												)}
 											/>
-											<h2 className="ml-2 inline py-1.5 w-full cursor-pointer text-start truncate font-normal capitalize">
+											<h2 className="ml-2 inline w-full cursor-pointer truncate py-1.5 text-start font-normal capitalize">
 												{replaceUnderscore(value[showLabel ?? label])}
 											</h2>
 											<Input
 												id={itemId}
 												type="radio"
-												defaultChecked={value[label] === valueLabel}
+												defaultChecked={String(value[label]) === valueLabel}
 												name={name}
 												autoComplete="on"
 												value={value[label]}

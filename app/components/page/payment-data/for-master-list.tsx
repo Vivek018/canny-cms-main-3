@@ -14,7 +14,7 @@ type AttendanceListProps = {
 	pageSize: number
 }
 
-export const PaymentDataForProjectLocationList = ({
+export const PaymentDataForMasterList = ({
 	data,
 	month,
 	year,
@@ -45,7 +45,6 @@ export const PaymentDataForProjectLocationList = ({
 						headers: datasHeader,
 						name: 'employees',
 						singleRoute: 'employee',
-						length: 20,
 						extraRoute: `payment_data?month=${month}&year=${year}`,
 						page: parseInt(page),
 						pageSize: pageSize,
@@ -56,7 +55,7 @@ export const PaymentDataForProjectLocationList = ({
 					data={employeeData as any}
 				/>
 			</div>
-			<Form method="POST" className="py-2">
+			<Form method="POST">
 				<PaginationButtons page={page} count={count} pageSize={pageSize} />
 			</Form>
 		</div>

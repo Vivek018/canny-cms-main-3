@@ -54,11 +54,10 @@ export const letterTypesInputList: { [key: string]: any } = {
 					/>
 				</>
 			)
-		}, 
-    offer: null,
-    recommendation: null,
-		negligence: null,
-    pay_slip: null,
+		},
+		joining: <></>,
+		experience: null,
+		pay_slip: null,
 	},
 	advances: {
 		bill: <></>,
@@ -201,74 +200,85 @@ export const pdfTemplates = {
 			</View>
 		</>
 	),
-	offer: (data: any) => (
-		<View style={styles().page}>
-			<View style={styles().header}>
-				<Text style={styles().companyName}>[Company Name]</Text>
-				<Text style={styles().companyAddress}>[Company Address]</Text>
-			</View>
-			<View style={styles().section}>
-				<Text>Date: {new Date().toLocaleDateString()}</Text>
-				<Text>To,</Text>
-				<Text>{data.name}</Text>
-				<Text>Address: {data.permanent_address}</Text>
-			</View>
-			<View style={styles().section}>
-				<Text>Subject: Offer of Employment</Text>
-			</View>
-			<View style={styles().section}>
-				<Text>Dear {data.full_name},</Text>
-				<Text>
-					We are delighted to extend to you this offer of employment for the
-					position of {data.designation} at. We are confident that your skills
-					and experience will be an ideal fit for our team.
-				</Text>
-				<Text>Your start date will be {data.startDate}.</Text>
-				<Text>Your annual salary will be {data.salary}.</Text>
-				<Text>
-					Please sign and return this letter by {data.responseDate} to confirm
-					your acceptance of this offer.
+	joining: (data: any) => (
+		<>
+			<View
+				style={{
+					...styles().section,
+					alignSelf: 'center',
+				}}
+			>
+				<Text style={{ textDecoration: 'underline', fontSize: 14 }}>
+					Experience Letter
 				</Text>
 			</View>
-			<View style={styles().signature}>
-				<Text>Sincerely,</Text>
-				<Text>[Your Name]</Text>
-				<Text>[Your Position]</Text>
-				<Text>[Company Name]</Text>
+			<View style={styles().point}>
+				<Text>
+					This is to certify that {data.full_name} has worked as a{' '}
+					{data.designation} under {data.company.name} from{' '}
+					{new Date(data.joining_date).toLocaleDateString()} to{' '}
+					{new Date(data.exit_date).toLocaleDateString()}.
+				</Text>
 			</View>
-			<View style={styles().footer}>
-				<Text>[Company Footer Information]</Text>
+			<View style={styles().point}>
+				<Text>
+					During their tenure, they have shown strong skills, sincerity and have
+					been dedicated towards their work throughout.
+				</Text>
 			</View>
-		</View>
+			<View style={styles().point}>
+				<Text>
+					{data.full_name} has been an asset to the team and has played a
+					significant role in projects.
+				</Text>
+			</View>
+			<View style={styles().point}>
+				<Text>
+					We wish {data.name}
+					the best in their future endeavors.
+				</Text>
+			</View>
+		</>
 	),
 	experience: (data: any) => (
-		<View style={styles().page}>
-			<View style={styles().header}>
-				<Text style={styles().companyName}>[Company Name]</Text>
-				<Text style={styles().companyAddress}>[Company Address]</Text>
-			</View>
-			<View style={styles().section}>
-				<Text>To Whom It May Concern,</Text>
-			</View>
-			<View style={styles().section}>
-				<Text>
-					This is to certify that {data.name} was employed with us as a{' '}
-					{data.position} from {data.startDate} to {data.endDate}. During their
-					tenure, they demonstrated exemplary skills and dedication to their
-					role.
+		<>
+			<View
+				style={{
+					...styles().section,
+					alignSelf: 'center',
+				}}
+			>
+				<Text style={{ textDecoration: 'underline', fontSize: 14 }}>
+					Experience Letter
 				</Text>
-				<Text>We wish them all the best in their future endeavors.</Text>
 			</View>
-			<View style={styles().signature}>
-				<Text>Sincerely,</Text>
-				<Text>[Your Name]</Text>
-				<Text>[Your Position]</Text>
-				<Text>[Company Name]</Text>
+			<View style={styles().point}>
+				<Text>
+					This is to certify that {data.full_name} has worked as a{' '}
+					{data.designation} under {data.company.name} from{' '}
+					{new Date(data.joining_date).toLocaleDateString()} to{' '}
+					{new Date(data.exit_date).toLocaleDateString()}.
+				</Text>
 			</View>
-			<View style={styles().footer}>
-				<Text>[Company Footer Information]</Text>
+			<View style={styles().point}>
+				<Text>
+					During their tenure, they have shown strong skills, sincerity and have
+					been dedicated towards their work throughout.
+				</Text>
 			</View>
-		</View>
+			<View style={styles().point}>
+				<Text>
+					{data.full_name} has been an asset to the team and has played a
+					significant role in projects.
+				</Text>
+			</View>
+			<View style={styles().point}>
+				<Text>
+					We wish {data.name}
+					the best in their future endeavors.
+				</Text>
+			</View>
+		</>
 	),
 	termination: (data: any) => (
 		<View style={styles().page}>
@@ -293,37 +303,6 @@ export const pdfTemplates = {
 				</Text>
 				<Text>
 					Please refer to the company's termination policy for further details.
-				</Text>
-			</View>
-			<View style={styles().signature}>
-				<Text>Sincerely,</Text>
-				<Text>[Your Name]</Text>
-				<Text>[Your Position]</Text>
-				<Text>[Company Name]</Text>
-			</View>
-			<View style={styles().footer}>
-				<Text>[Company Footer Information]</Text>
-			</View>
-		</View>
-	),
-	recommendation: (data: any) => (
-		<View style={styles().page}>
-			<View style={styles().header}>
-				<Text style={styles().companyName}>[Company Name]</Text>
-				<Text style={styles().companyAddress}>[Company Address]</Text>
-			</View>
-			<View style={styles().section}>
-				<Text>To Whom It May Concern,</Text>
-			</View>
-			<View style={styles().section}>
-				<Text>
-					I am pleased to recommend {data.name} for any position in {data.field}
-					. During their time at {data.companyName}, they consistently
-					demonstrated exceptional skills and professionalism.
-				</Text>
-				<Text>
-					I am confident that they will be an asset to any organization they
-					join.
 				</Text>
 			</View>
 			<View style={styles().signature}>

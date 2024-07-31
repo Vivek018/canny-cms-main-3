@@ -6,26 +6,27 @@ export function ExtraFilter({
 	setSearchParam,
 	companyList,
 	projectList,
+	projectLocationList,
 	month,
 	year,
 }: {
 	searchParam: URLSearchParams
 	setSearchParam: (searchParam: URLSearchParams) => void
-	companyList: any
-	projectList: any
-	month: string
-	year: string
+	companyList?: any
+	projectList?: any
+	projectLocationList?: any
+	month?: string
+	year?: string
 }) {
-  	const monthList = months
-		const yearList = getYears(10)
+	const monthList = month ? months : null
+	const yearList = year ? getYears(10) : null
 
 	return (
-		<>
+		<div className='flex gap-2.5 items-center'>
 			<DetailsSelector
 				label="id"
 				list={companyList}
 				name="company"
-				defaultValue={month}
 				onChange={(e: any) => {
 					e.target.value && e.target.value !== 'none'
 						? searchParam.set('company', e.target.value)
@@ -35,13 +36,11 @@ export function ExtraFilter({
 				noLabel={true}
 				showLabel="name"
 				className={cn('w-min', !companyList && 'hidden')}
-				length={15}
 			/>
 			<DetailsSelector
 				label="id"
 				list={projectList}
 				name="project"
-				defaultValue={month}
 				onChange={(e: any) => {
 					e.target.value && e.target.value !== 'none'
 						? searchParam.set('project', e.target.value)
@@ -51,7 +50,20 @@ export function ExtraFilter({
 				noLabel={true}
 				showLabel="name"
 				className={cn('w-min', !projectList && 'hidden')}
-				length={15}
+			/>
+			<DetailsSelector
+				label="id"
+				list={projectLocationList}
+				name="project_location"
+				onChange={(e: any) => {
+					e.target.value && e.target.value !== 'none'
+						? searchParam.set('project_location', e.target.value)
+						: searchParam.delete('project_location')
+					setSearchParam(searchParam)
+				}}
+				noLabel={true}
+				showLabel="district"
+				className={cn('w-min', !projectLocationList && 'hidden')}
 			/>
 			<DetailsSelector
 				label="value"
@@ -85,7 +97,8 @@ export function ExtraFilter({
 				noNone={true}
 				className={cn('w-min', !yearList && 'hidden')}
 				triggerClassName="w-22"
+				popClassName="w-28 right-0"
 			/>
-		</>
+		</div>
 	)
 }

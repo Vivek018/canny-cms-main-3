@@ -21,7 +21,6 @@ export const columns = ({
 	headers,
 	name,
 	singleRoute,
-	length = 12,
 	extraRoute = '',
 	page = 1,
 	pageSize = PAGE_SIZE,
@@ -35,7 +34,6 @@ export const columns = ({
 	}[]
 	name: string
 	singleRoute: string
-	length?: number
 	extraRoute?: string
 	page?: number
 	pageSize?: number
@@ -54,6 +52,7 @@ export const columns = ({
 				}
 				onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)}
 				aria-label="Select all"
+				tabIndex={-1}
 			/>
 		),
 		cell: ({ row }: any) => (
@@ -62,6 +61,7 @@ export const columns = ({
 				checked={row.getIsSelected()}
 				onCheckedChange={value => row.toggleSelected(!!value)}
 				aria-label="Select row"
+				tabIndex={-1}
 			/>
 		),
 	},
@@ -94,15 +94,13 @@ export const columns = ({
 							'h-min pl-0 capitalize underline-offset-4 hover:underline focus-visible:underline focus-visible:outline-none',
 						)}
 					>
-						<div className="max-w-52 truncate">
+						<div className="max-w-40 truncate">
 							{typeof value === 'string' ? replaceUnderscore(value) : value}
 						</div>
 					</Link>
 				)
 			} else
-				return (
-					<div className="max-w-52">{formatStringIntoHtml(value, length)}</div>
-				)
+				return <div className="max-w-40">{formatStringIntoHtml(value)}</div>
 		},
 	})),
 	{

@@ -145,6 +145,8 @@ export default function UpsertUser({
 						const name = type && inputTypeValue?.name
 						const isMulti = type && inputTypeValue?.isMulti
 						const connectOn = inputTypeValue?.connectOn
+						const secondAcess = inputTypeValue?.secondAccess
+						const secondLabel = inputTypeValue?.secondLabel
 						const disabled =
 							dependsOn &&
 							!dependsValue.includes(searchParams.get(`${dependsOn}Dependency`))
@@ -228,6 +230,8 @@ export default function UpsertUser({
 										}
 										buttonReset={resetButtonRef}
 										errors={fields[value].errors}
+										secondAccess={secondAcess}
+										secondLabel={secondLabel}
 									/>
 								)
 							}
@@ -270,6 +274,8 @@ export default function UpsertUser({
 										}
 									}}
 									disabled={disabled}
+									secondAccess={secondAcess}
+									secondLabel={secondLabel}
 								/>
 							)
 						}

@@ -99,6 +99,23 @@ export function TextareaField({
 	)
 }
 
+type SelectRadioFieldProps = {
+	list: any
+	name: string
+	showLabel?: string
+	label: any
+	buttonReset?: any
+	defaultValue?: string
+	dependent?: boolean
+	isNotId?: boolean
+	errors?: ListOfErrors
+	onChange?: (e?: any) => void
+	disabled?: boolean
+	className?: string
+	secondAccess?: string
+	secondLabel?: string
+}
+
 export function RadioField({
 	list,
 	name,
@@ -112,20 +129,9 @@ export function RadioField({
 	onChange,
 	disabled = false,
 	className,
-}: {
-	list: any
-	name: string
-	showLabel?: string
-	label: string
-	buttonReset?: any
-	defaultValue?: string
-	dependent?: boolean
-	isNotId?: boolean
-	errors?: ListOfErrors
-	onChange?: (e?: any) => void
-	disabled?: boolean
-	className?: string
-}) {
+	secondAccess,
+	secondLabel,
+}: SelectRadioFieldProps) {
 	const [open, setOpen] = useState(false)
 	const { ref: inputRef } = useRefFocus(open)
 	const { isDocument } = useIsDocument()
@@ -228,7 +234,12 @@ export function RadioField({
 									return (
 										<CommandItem
 											key={itemId}
-											value={value[showLabel ?? label]}
+											value={
+												secondAccess && secondLabel
+													? value[showLabel ?? label] +
+														value[secondAccess][secondLabel]
+													: value[showLabel ?? label]
+											}
 											className="m-0 px-1"
 											disabled={
 												disabled || value[showLabel ?? label] === valueLabel
@@ -238,7 +249,7 @@ export function RadioField({
 													itemId,
 												) as HTMLInputElement
 												input?.click()
-												setCurrentValue(value[label])
+												setCurrentValue(String(value[label]))
 												setOpen(false)
 											}}
 										>
@@ -252,12 +263,26 @@ export function RadioField({
 												)}
 											/>
 											<h2 className="ml-2 inline w-full cursor-pointer truncate  text-start font-normal capitalize">
-												{replaceUnderscore(String(value[showLabel ?? label]))}
+												<span>
+													{replaceUnderscore(String(value[showLabel ?? label]))}
+												</span>
+												<span className="mx-4">
+													{secondAccess && secondLabel ? '-' : null}
+												</span>
+												<span className="text-foreground/50">
+													{secondAccess && secondLabel
+														? replaceUnderscore(
+																String(value[secondAccess][secondLabel]),
+															)
+														: null}
+												</span>
 											</h2>
 											<Input
 												id={itemId}
 												type="radio"
-												checked={value[label] === currentValue && !disabled}
+												checked={
+													String(value[label]) === currentValue && !disabled
+												}
 												readOnly={true}
 												name={name}
 												autoComplete="on"
@@ -291,16 +316,9 @@ export function SelectorField({
 	disabled = false,
 	isNotId,
 	errors,
-}: {
-	list: any
-	name: string
-	label: string
-	buttonReset?: any
-	defaultValue?: any[]
-	disabled?: boolean
-	isNotId?: boolean
-	errors?: ListOfErrors
-}) {
+	secondAccess,
+	secondLabel,
+}: SelectRadioFieldProps) {
 	const [open, setOpen] = useState(false)
 	const { ref: inputRef } = useRefFocus(open)
 	const { isDocument } = useIsDocument()
@@ -313,7 +331,7 @@ export function SelectorField({
 		return list?.find(
 			(value: any) =>
 				String(value[label]).toLowerCase() ===
-				currentValue[label]?.toLowerCase(),
+				String(currentValue[label])?.toLowerCase(),
 		)?.[label]
 	})
 
@@ -343,17 +361,17 @@ export function SelectorField({
 			<DetailsMenu open={open} setOpen={setOpen} className={cn('static')}>
 				<DetailsMenuTrigger
 					className={cn(
-						'no-scrollbar flex h-max max-h-44 w-96 justify-between gap-2 overflow-scroll border-muted-foreground bg-background p-2 dark:border-muted-foreground',
+						'flex h-max max-h-44 w-96 justify-between gap-2 border-muted-foreground bg-background p-2 dark:border-muted-foreground',
 					)}
 				>
 					<span
 						className={cn(
-							'row-span-4 mr-2 h-max max-h-44 w-full space-x-2 space-y-2 capitalize',
+							'no-scrollbar row-span-4  mr-2 h-max max-h-40 w-full space-x-2 space-y-2 overflow-scroll capitalize',
 							noValue && 'text-gray-400',
 						)}
 					>
 						{noValue
-							? replaceUnderscore(name + 's')
+							? replaceUnderscore(name)
 							: valueLabel?.map((value: any, index) => (
 									<p
 										key={value + index}
@@ -385,7 +403,11 @@ export function SelectorField({
 									return (
 										<CommandItem
 											key={itemId}
-											value={value[label]}
+											value={
+												secondAccess && secondLabel
+													? value[label] + value[secondAccess][secondLabel]
+													: value[label]
+											}
 											disabled={disabled}
 											className="m-0 px-1"
 											onSelect={() => {
@@ -395,7 +417,7 @@ export function SelectorField({
 																val => val[label] !== value[label],
 															)
 														})
-													: setCurrentValues(prevVal => {
+													: setCurrentValues((prevVal: any) => {
 															return [...prevVal!, { [label]: value[label] }]
 														})
 												const input = document?.getElementById(
@@ -415,7 +437,17 @@ export function SelectorField({
 												)}
 											/>
 											<h2 className="ml-2 inline w-full cursor-pointer truncate text-start font-normal capitalize">
-												{replaceUnderscore(String(value[label]))}
+												<span>{replaceUnderscore(String(value[label]))}</span>
+												<span className="mx-4">
+													{secondAccess && secondLabel ? '-' : null}
+												</span>
+												<span className="text-foreground/50">
+													{secondAccess && secondLabel
+														? replaceUnderscore(
+																String(value[secondAccess][secondLabel]),
+															)
+														: null}
+												</span>
 											</h2>
 											<input
 												id={itemId}

@@ -40,7 +40,7 @@ export function Sidebar({ className, theme, sidebar }: SidebarProps) {
 	return (
 		<aside
 			className={cn(
-				'flex h-full w-56 flex-col gap-3 overflow-hidden bg-muted text-muted-foreground transition-[width]',
+				'flex h-full w-52 flex-col gap-3 overflow-hidden bg-muted text-muted-foreground transition-[width]',
 				'max-lg:w-[68px]',
 				className,
 				open && 'w-[68px]',
@@ -69,7 +69,7 @@ export function Sidebar({ className, theme, sidebar }: SidebarProps) {
 					>
 						<Icon
 							className={cn(
-								'mt-[1.5px] h-8 w-8 cursor-pointer rounded-sm hover:bg-accent',
+								'mt-[1.5px] h-7 w-7 cursor-pointer rounded-sm hover:bg-accent',
 								'max-lg:cursor-default max-lg:hover:bg-muted',
 							)}
 							name="hamburger"
@@ -84,7 +84,7 @@ export function Sidebar({ className, theme, sidebar }: SidebarProps) {
 						open && 'hidden',
 					)}
 				>
-					<h1 className="w-max text-[23px] font-extrabold uppercase tracking-wider">
+					<h1 className="w-max text-xl font-extrabold uppercase tracking-wider">
 						CANNY CMS
 					</h1>
 				</Link>
@@ -101,12 +101,12 @@ export function Sidebar({ className, theme, sidebar }: SidebarProps) {
 				)}
 				onDoubleClick={() => setOpen(prevValue => !prevValue)}
 			>
-				<ul className="flex w-full flex-col">
+				<ul className="flex w-full flex-col pb-4">
 					{sideNavList.map(({ icon, isLabel, name, link }, key) => {
 						return !isLabel ? (
 							<TooltipProvider key={key}>
 								<Tooltip delayDuration={0}>
-									<TooltipTrigger>
+									<TooltipTrigger tabIndex={-1}>
 										<NavLink
 											to={link ?? ''}
 											className={({ isActive }) =>
@@ -177,7 +177,7 @@ export function Sidebar({ className, theme, sidebar }: SidebarProps) {
 			</div>
 			<div
 				className={cn(
-					'mb-6 mt-auto flex w-full flex-row items-center justify-between border-t-[1.5px] border-foreground p-2',
+					'mb-6 mt-auto flex w-full flex-row items-center justify-between border-t-[1.5px] border-foreground py-3 px-1.5',
 					'max-lg:mb-4 max-lg:flex-col max-lg:gap-1',
 					open && 'mb-4 flex-col gap-1',
 				)}
@@ -185,7 +185,7 @@ export function Sidebar({ className, theme, sidebar }: SidebarProps) {
 				<DetailsMenu className="static">
 					<DetailsMenuTrigger
 						className={cn(
-							'flex w-max flex-1 cursor-pointer items-center gap-2 rounded-sm border-none py-2 pl-3 pr-4 text-sm tracking-wide',
+							'flex w-max flex-1 cursor-pointer items-center gap-2 rounded-sm border-none py-1.5 px-2 text-sm tracking-wide',
 							'max-lg:p-3',
 							open && 'p-3',
 						)}

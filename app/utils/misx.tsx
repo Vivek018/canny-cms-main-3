@@ -82,6 +82,7 @@ export function isTitle(str: string) {
 		str === 'label' ||
 		str === 'title' ||
 		str === 'value' ||
+		str === 'kms_driven' ||
 		str === 'district'
 	) {
 		return true
@@ -130,7 +131,7 @@ export function formatString(value: string) {
 	return value
 }
 
-export function formatStringIntoHtml(value: string, length?: number) {
+export function formatStringIntoHtml(value: string) {
 	if (typeof value === 'string' && value.length > 20) {
 		const dateValue = new Date(value)
 		if (isNaN(dateValue.getTime())) {
@@ -173,6 +174,10 @@ export const getYears = (years = 35): { value: number }[] => {
 		yearsArray.push({ value: i })
 	}
 	return yearsArray
+}
+
+export const getMonthLabel = (month?: string) => {
+	return month ? months.find(m => m?.value === month)?.label : ''
 }
 
 // this is to throw error for any condition we send
@@ -403,9 +408,12 @@ export const extractPaymentData = ({
 	employee,
 	payment_field,
 	attendance,
+	month,
+	year,
 }: {
 	employee: {
 		skill_type: string
+		id: string
 		company_id: string
 		project_id: string
 	}
@@ -413,12 +421,10 @@ export const extractPaymentData = ({
 		name: string
 		is_deduction: boolean
 		skill_type: string
-		service_charge_field: boolean
 		percentage_of?: {
 			name: string
 			is_deduction: boolean
 			skill_type: string
-			service_charge_field: boolean
 			value: {
 				value: number
 				max_value: number
@@ -429,6 +435,7 @@ export const extractPaymentData = ({
 				year: number
 				company: { id: string }[]
 				project: { id: string }[]
+				employee: { id: string }[]
 			}[]
 		}[]
 		value: {
@@ -441,27 +448,48 @@ export const extractPaymentData = ({
 			year: number
 			company: { id: string }[]
 			project: { id: string }[]
+			employee: { id: string }[]
 		}[]
 	}
 	attendance: { present: boolean; holiday: boolean; no_of_hours: number }[]
+	month: number
+	year: number
 }) => {
 	let value = 0
 	const { normalPresentDays, overtimeDays } = getAttendanceDays({
 		attendance,
 	})
 
-	const paymentFieldValues = payment_field.value
-	if (paymentFieldValues.length) {
+	const paymentFieldValues = payment_field?.value
+	if (
+		paymentFieldValues?.length &&
+		(normalPresentDays > 0 || overtimeDays > 0)
+	) {
 		for (let i = 0; i < paymentFieldValues.length; i++) {
-			if (
+			const compareCompanyAndProject = Boolean(
 				paymentFieldValues[i].company.find(
 					({ id }) => id === employee.company_id,
 				) &&
-				paymentFieldValues[i].project.find(
-					({ id }) => id === employee.project_id,
-				) &&
-				(paymentFieldValues[i].skill_type === employee.skill_type ||
-					paymentFieldValues[i].skill_type === 'all')
+					paymentFieldValues[i].project.find(
+						({ id }) => id === employee.project_id,
+					),
+			)
+			const compareEmployee = Boolean(
+				paymentFieldValues[i].employee.find(({ id }) => id === employee.id),
+			)
+			const compareEmployeeSkillType =
+				paymentFieldValues[i].skill_type === employee.skill_type ||
+				paymentFieldValues[i].skill_type === 'all'
+
+			const compareValueValidity =
+				year > paymentFieldValues[i].year ||
+				(year === paymentFieldValues[i].year &&
+					month >= paymentFieldValues[i].month)
+
+			if (
+				compareCompanyAndProject !== compareEmployee &&
+				compareEmployeeSkillType &&
+				compareValueValidity
 			) {
 				if (paymentFieldValues[i].type === 'percentage') {
 					if (payment_field.percentage_of?.length) {
@@ -476,6 +504,8 @@ export const extractPaymentData = ({
 											employee,
 											payment_field: percentage_payment_field̉,
 											attendance,
+											month,
+											year,
 										})
 										return (
 											total +
@@ -517,10 +547,11 @@ export const transformPaymentData = ({
 	month: string
 	year: string
 }) => {
-	let employeeData = data?.employee?.map((employee: any) => ({
+	const mapData = data?.employee !== undefined ? data.employee : data
+	let employeeData = mapData?.map((employee: any) => ({
 		...employee,
-		month: months?.find(m => m.value === month)?.label,
-		year,
+		month: getMonthLabel(month),
+		year: year,
 	}))
 
 	for (let i = 0; i < employeeData?.length; i++) {
@@ -531,12 +562,15 @@ export const transformPaymentData = ({
 				paymentFieldData[j].value.length && employeeData[i].attendance.length
 					? extractPaymentData({
 							employee: {
+								id: employeeData[i].id,
 								company_id: employeeData[i].company_id,
 								project_id: employeeData[i].project_id,
 								skill_type: employeeData[i].skill_type,
 							},
 							payment_field: paymentFieldData[j],
 							attendance: employeeData[i].attendance,
+							month: parseInt(month),
+							year: parseInt(year),
 						})
 					: 0
 		}

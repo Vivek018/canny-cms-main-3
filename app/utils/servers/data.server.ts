@@ -52,6 +52,7 @@ export const getData = ({
 	const page = parseInt(new URL(url).searchParams.get('page') ?? '1')
 
 	const paginationOption = {
+		orderBy: [{ created_at: 'desc' }, { id: 'desc' }] as unknown as any,
 		take: take ?? PAGE_SIZE,
 		skip: (page - 1) * (take ?? PAGE_SIZE),
 	}
@@ -103,7 +104,6 @@ export const getData = ({
 			}
 		},
 		advances: () => {
-			const amount = filterCookies.get('amount')
 			const credited = filterCookies.get('credited')
 			const payment_date = filterCookies.get('payment_date')
 			return {
@@ -114,9 +114,6 @@ export const getData = ({
 							? {
 									OR: [
 										{ label: { contains: search, mode: 'insensitive' } },
-										{
-											amount: { gte: parseInt(amount ?? '0') },
-										},
 										{
 											employee: {
 												full_name: { contains: search, mode: 'insensitive' },
@@ -444,7 +441,6 @@ export const getData = ({
 		},
 		payment_fields: () => {
 			const is_deduction = filterCookies.get('is_deduction')
-			const service_charge_field = filterCookies.get('service_charge_field')
 			return {
 				where: {
 					...filterOption,
@@ -458,13 +454,6 @@ export const getData = ({
 							? {
 									is_deduction: {
 										equals: is_deduction === 'true' ? true : false,
-									},
-								}
-							: {},
-						service_charge_field
-							? {
-									service_charge_field: {
-										equals: service_charge_field === 'true' ? true : false,
 									},
 								}
 							: {},
@@ -488,19 +477,10 @@ export const getData = ({
 			return {
 				where: {
 					...filterOption,
+					joining_date: {
+						lte: new Date(`${month}/31/${year}`),
+					},
 					AND: [
-						{
-							joining_date: {
-								lte: new Date(`${month}/31/${year}`),
-							},
-						},
-						search
-							? {
-									OR: [
-										{ full_name: { contains: search, mode: 'insensitive' } },
-									],
-								}
-							: {},
 						company_id
 							? {
 									company_id: company_id,
@@ -519,19 +499,10 @@ export const getData = ({
 			return {
 				where: {
 					...filterOption,
+					joining_date: {
+						lte: new Date(`${month}/31/${year}`),
+					},
 					AND: [
-						{
-							joining_date: {
-								lte: new Date(`${month}/31/${year}`),
-							},
-						},
-						search
-							? {
-									OR: [
-										{ full_name: { contains: search, mode: 'insensitive' } },
-									],
-								}
-							: {},
 						company_id
 							? {
 									company_id: company_id,
@@ -543,6 +514,13 @@ export const getData = ({
 								}
 							: {},
 					],
+				},
+			}
+		},
+		vehicle_monthly: () => {
+			return {
+				where: {
+					...filterOption,
 				},
 			}
 		},
@@ -638,6 +616,11 @@ export const getData = ({
 						id: true,
 						name: true,
 						email_suffix: true,
+						_count: {
+							select: {
+								employee: true,
+							},
+						},
 					},
 					...filtersOption[master as 'companies'](),
 					...paginationOption,
@@ -741,7 +724,7 @@ export const getData = ({
 					},
 					...filtersOption[master as 'payment_fields'](),
 					...paginationOption,
-					orderBy: { sort_index: 'asc' },
+					orderBy: { sort_id: 'asc' },
 				}),
 				count: await prisma.payment_Field.count({
 					...filtersOption[master as 'payment_fields'](),
@@ -756,6 +739,11 @@ export const getData = ({
 						name: true,
 						starting_date: true,
 						ending_date: true,
+						_count: {
+							select: {
+								employee: true,
+							},
+						},
 					},
 					...filtersOption[master as 'projects'](),
 					...paginationOption,
@@ -777,6 +765,7 @@ export const getData = ({
 						esic_code: true,
 						_count: {
 							select: {
+								employee: true,
 								payment_field: true,
 							},
 						},
@@ -799,7 +788,7 @@ export const getData = ({
 						type: true,
 						year_bought: true,
 						price: true,
-						kms_driven: true,
+						total_kms_driven: true,
 						status: true,
 						company: {
 							select: {
@@ -932,12 +921,10 @@ export const getData = ({
 											select: {
 												name: true,
 												is_deduction: true,
-												service_charge_field: true,
 												percentage_of: {
 													select: {
 														name: true,
 														is_deduction: true,
-														service_charge_field: true,
 														value: {
 															select: {
 																value: true,
@@ -949,14 +936,25 @@ export const getData = ({
 																year: true,
 																company: { select: { id: true } },
 																project: { select: { id: true } },
+																employee: { select: { id: true } },
 															},
 															where: {
-																month: {
-																	lte: parseInt(month),
-																},
-																year: {
-																	lte: parseInt(year),
-																},
+																pay_at_once: false,
+																OR: [
+																	{
+																		year: {
+																			lt: parseInt(year),
+																		},
+																	},
+																	{
+																		month: {
+																			lte: parseInt(month),
+																		},
+																		year: {
+																			equals: parseInt(year),
+																		},
+																	},
+																],
 															},
 														},
 													},
@@ -972,18 +970,31 @@ export const getData = ({
 														year: true,
 														company: { select: { id: true } },
 														project: { select: { id: true } },
+														employee: { select: { id: true } },
 													},
 													where: {
-														month: {
-															lte: parseInt(month),
-														},
-														year: {
-															lte: parseInt(year),
-														},
+														OR: [
+															{
+																year: {
+																	lt: parseInt(year),
+																},
+															},
+															{
+																month: {
+																	lte: parseInt(month),
+																},
+																year: {
+																	equals: parseInt(year),
+																},
+															},
+														],
 													},
 												},
 											},
-											orderBy: { sort_index: 'asc' },
+											where: {
+												is_statutory: false,
+											},
+											orderBy: { sort_id: 'asc' },
 										},
 									},
 								},
@@ -1040,6 +1051,23 @@ export const getData = ({
 								: {},
 						})
 					)?._count.employee ?? 0,
+			}
+		},
+		vehicle_monthly: async () => {
+			return {
+				data: await prisma.vehicle_Monthly.findMany({
+					select: {
+						id: true,
+						kms_driven: true,
+						month: true,
+						year: true,
+					},
+					...filtersOption[master as 'vehicle_monthly'](),
+					...paginationOption,
+				}),
+				count: await prisma.vehicle_Monthly.count({
+					...filtersOption[master as 'vehicle_monthly'](),
+				}),
 			}
 		},
 		value: async (

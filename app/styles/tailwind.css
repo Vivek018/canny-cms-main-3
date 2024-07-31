@@ -19,6 +19,9 @@
 		--secondary: 210 60% 84%;
 		--secondary-foreground: 0 0% 9%;
 
+		--tertinary: 340 80% 70%;
+		--tertinary-foreground: 0 0% 9%;
+
 		--muted: 0 0% 92.3%;
 		--muted-foreground: 0 0% 18.1%;
 
@@ -33,6 +36,19 @@
 		--ring: 0 0% 3.9%;
 
 		--radius: 0.5rem;
+
+		--chart-1: 210 100% 65%;
+		--chart-2: 120 100% 65%;
+		--chart-3: 300 100% 65%;
+		--chart-4: 60 100% 65%;
+		--chart-5: 0 100% 65%;
+		--chart-6: 180 100% 65%;
+		--chart-7: 240 100% 65%;
+		--chart-8: 30 100% 65%;
+		--chart-9: 90 100% 65%;
+		--chart-10: 270 100% 65%;
+		--chart-11: 330 100% 65%;
+		--chart-12: 210 100% 65%;
 	}
 
 	.dark {
@@ -51,18 +67,34 @@
 		--secondary: 210 70% 25%;
 		--secondary-foreground: 0 0% 98%;
 
+		--tertinary: 340 80% 60%;
+		--tertinary-foreground: 0 0% 98%;
+
 		--muted: 0 0% 16%;
 		--muted-foreground: 0 0% 79%;
 
 		--accent: 0 0% 22%;
 		--accent-foreground: 0 0% 98%;
 
-		--destructive: 0 75% 35%;
+		--destructive: 0 75% 40%;
 		--destructive-foreground: 0 0% 88%;
 
 		--border: 0 0% 14.9%;
 		--input: 0 0% 14.9%;
 		--ring: 0 0% 83.1%;
+
+		--chart-1: 210 80% 40%;
+		--chart-2: 120 80% 40%;
+		--chart-3: 300 80% 40%;
+		--chart-4: 60 80% 40%;
+		--chart-5: 0 80% 40%;
+		--chart-6: 180 80% 40%;
+		--chart-7: 240 80% 40%;
+		--chart-8: 30 80% 40%;
+		--chart-9: 90 80% 40%;
+		--chart-10: 270 80% 40%;
+		--chart-11: 330 80% 40%;
+		--chart-12: 210 80% 40%;
 	}
 }
 
@@ -72,7 +104,7 @@
 	}
 
 	input[type='date']::-webkit-calendar-picker-indicator {
-    padding: 8px;
+		padding: 8px;
 	}
 
 	body {

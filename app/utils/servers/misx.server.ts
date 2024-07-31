@@ -1,7 +1,7 @@
 import { redirect, type ActionFunctionArgs } from '@remix-run/node'
 import { NORMAL_DAY_HOURS, routeObjectTitle } from '@/constant'
 import { inputTypes } from '../input-types'
-import { formatDate } from '../misx'
+import { capitalizeAfterUnderscore, formatDate } from '../misx'
 import { Schemas } from '../schema'
 import { prisma } from './db.server'
 
@@ -19,11 +19,30 @@ export function invariantResponse(
 	}
 }
 
-export async function extraFilterAction({ request }: ActionFunctionArgs) {
+export async function extraFilterAction({
+	request,
+	params,
+}: ActionFunctionArgs) {
 	const formData = await request.formData()
 	const url = new URL(request.url)
+
+	const tab = params.tab as 'user'
+	const ids = formData.getAll('ids')
+
+	if (ids) {
+		for (let i = 0; i < ids.length; i++) {
+			await prisma[capitalizeAfterUnderscore(tab) as 'user'].deleteMany({
+				where: {
+					id: ids[i].toString(),
+				},
+			})
+			url.searchParams.delete('page')
+		}
+	}
+
 	const company = formData.get('company')
 	const project = formData.get('project')
+	const project_location = formData.get('project_location')
 	const month = formData.get('month')
 	const year = formData.get('year')
 
@@ -53,6 +72,16 @@ export async function extraFilterAction({ request }: ActionFunctionArgs) {
 		url.searchParams.set('project', project.toString())
 	} else if (project === 'none') {
 		url.searchParams.delete('project')
+	}
+
+	if (
+		project_location &&
+		project_location !== 'on' &&
+		project_location !== 'none'
+	) {
+		url.searchParams.set('project_location', project_location.toString())
+	} else if (project_location === 'none') {
+		url.searchParams.delete('project_location')
 	}
 
 	if (month && month !== '0' && month !== 'none') {

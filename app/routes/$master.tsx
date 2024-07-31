@@ -28,6 +28,7 @@ import { SearchBar } from '@/components/search-bar'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Icon } from '@/components/ui/icon'
 import {
+	analyticsEnabled,
 	importExportEnabled,
 	MAX_DATA_LENGTH,
 	sideNavList,
@@ -106,7 +107,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 			},
 		})
 	}
-	url.searchParams.set('page', '1')
+	url.searchParams.delete('page')
 	return redirect(url.toString())
 }
 
@@ -118,16 +119,16 @@ export default function MasterIndex() {
 	const { CSVReader } = useCSVReader()
 	const [searchParam, setSearchParam] = useSearchParams()
 	const { isDocument } = useIsDocument()
+	const { handleEnter, handleLeave } = useMouseEvent({
+		searchParam,
+		setSearchParam,
+	})
 
 	const [importData, setImportData] = useState<any>(null)
 	const [flattenData, setFlattenData] = useState<any>(exportData)
 	const [showDelete, setShowDelete] = useState(false)
 	const [rowSelection, setRowSelection] = useState({})
 	const [rows, setRows] = useState<any>([])
-	const { handleMouseEnter, handleMouseLeave } = useMouseEvent({
-		searchParam,
-		setSearchParam,
-	})
 
 	const datasHeader = data ? getTableHeaders(data, ['id', 'path']) : null
 
@@ -141,7 +142,7 @@ export default function MasterIndex() {
 			searchParam.delete('imported')
 			setSearchParam(searchParam)
 		}
-	}, [imported, searchParam, setSearchParam])
+	}, [imported, searchParam, setSearchParam, data])
 
 	useEffect(() => {
 		if (exportData?.length) {
@@ -154,12 +155,10 @@ export default function MasterIndex() {
 		}
 	}, [exportData])
 
-	const routeName = replaceUnderscore(
-		singleRouteName[name as keyof typeof singleRouteName],
-	)
+	const routeName = replaceUnderscore(singleRouteName[name])
 
 	return (
-		<div className="flex h-[98%] flex-col pt-1">
+		<div className="flex h-[98%] flex-col py-[5px]">
 			<Modal
 				link={`/${name}`}
 				modalClassName={cn(!showDelete && 'hidden')}
@@ -200,7 +199,15 @@ export default function MasterIndex() {
 				</Form>
 			</Modal>
 			<Outlet />
-			<Header title={name}>
+			<Header
+				title={name}
+				headerLink1={
+					analyticsEnabled.find(master => master === name) && `/${name}`
+				}
+				headerLink2={
+					analyticsEnabled.find(master => master === name) && `analytics`
+				}
+			>
 				<FormFilterSelector name={name}>
 					<input type="hidden" name="all-filters" value={filters.join('--')} />
 					<SearchBar />
@@ -269,12 +276,10 @@ export default function MasterIndex() {
 								<Button
 									variant="accent"
 									className="h-full gap-2 rounded-sm px-3 py-2.5"
-									onMouseEnter={handleMouseEnter}
-									onMouseLeave={handleMouseLeave}
-									onFocus={() => {
-										searchParam.set('export', 'true')
-										setSearchParam(searchParam)
-									}}
+									onMouseEnter={handleEnter}
+									onMouseLeave={handleLeave}
+									onFocus={handleEnter}
+									onBlur={handleLeave}
 								>
 									<CSVDownloader
 										className="flex items-center gap-2"
@@ -297,10 +302,9 @@ export default function MasterIndex() {
 						headers: datasHeader!,
 						name: name,
 						singleRoute: routeName,
-						length: 40,
 						page: parseInt(page),
 					})}
-					data={data as any}
+					data={data}
 					className={!datasHeader ? 'hidden' : 'flex-1'}
 				/>
 				<Form method="POST" action={`/filters/${name}`}>

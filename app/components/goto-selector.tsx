@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { navList } from '@/constant'
 import { useIsDocument } from '@/utils/clients/is-document'
 import { useRefFocus } from '@/utils/clients/ref-focus'
-import { cn } from '@/utils/misx'
+import { cn, replaceUnderscore } from '@/utils/misx'
 import { type IconName } from '~/icon-name'
 import { DetailsMenu, DetailsMenuTrigger, DetailsPopup } from './details-menu'
 import {
@@ -38,7 +38,7 @@ export function GotoSelector({
 			<DetailsMenuTrigger
 				open={gotofocus}
 				className={cn(
-					'w-[185px] rounded-md bg-background dark:border-accent',
+					'w-[170.5px] rounded-md bg-background dark:border-accent',
 					className,
 					'max-lg:flex max-lg:w-full max-lg:items-center max-lg:justify-center',
 					open && 'flex w-full items-center justify-center',
@@ -74,11 +74,11 @@ export function GotoSelector({
 											key={link}
 											to={link!}
 											className={cn(
-												' my-0.5 flex h-1 w-full items-center justify-start gap-2 rounded-sm px-2 py-4 hover:bg-accent',
+												' my-0.5 flex h-1 w-full items-center justify-start gap-2 rounded-sm px-2 py-4 hover:bg-accent capitalize',
 											)}
 										>
 											<Icon name={icon as IconName}></Icon>
-											<p className="truncate">{name}</p>
+											<p className="truncate">{replaceUnderscore(name)}</p>
 										</Link>
 									</CommandItem>
 								) : null

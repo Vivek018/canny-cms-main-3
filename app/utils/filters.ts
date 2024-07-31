@@ -41,7 +41,6 @@ export const filters = {
 	payment_fields: () => [
 		{ name: 'search', label: 'search' },
 		{ name: 'is_deduction', label: 'value' },
-		{ name: 'service_charge_field', label: 'value' },
 		{ name: 'company', label: 'name' },
 		{ name: 'project', label: 'name' },
 		{ name: 'project_location', label: 'district' },

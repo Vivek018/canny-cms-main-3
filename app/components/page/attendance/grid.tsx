@@ -99,11 +99,15 @@ export const AttendanceGrid = ({ data, month, year }: AttendanceGridProps) => {
 											'rounded-sm bg-accent p-1 text-[11px] font-medium capitalize',
 										)}
 									>
-										{dateData?.holiday === undefined
-											? 'N/A'
-											: dateData?.holiday
-												? 'Holiday'
-												: 'Workday'}
+										{dateData?.date
+											? new Date(dateData?.date ?? '').getDay() === 0
+												? 'Weekly Off'
+												: dateData?.holiday === undefined
+													? 'N/A'
+													: dateData?.holiday
+														? 'Holiday'
+														: 'Workday'
+											: 'N/A'}
 									</span>
 								</p>
 							</div>

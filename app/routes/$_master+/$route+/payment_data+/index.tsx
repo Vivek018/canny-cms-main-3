@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react'
 import { useCSVDownloader } from 'react-papaparse'
 import { ExtraFilter } from '@/components/extra-filter'
 import { PaymentDataForEmployeeList } from '@/components/page/payment-data/for-employee-list'
-import { PaymentDataForProjectLocationList } from '@/components/page/payment-data/for-project-location-list'
+import { PaymentDataForMasterList } from '@/components/page/payment-data/for-master-list'
 import { Button } from '@/components/ui/button'
 import { Icon } from '@/components/ui/icon'
 import {
@@ -82,12 +82,10 @@ export async function loader({
 								id: true,
 								name: true,
 								is_deduction: true,
-								service_charge_field: true,
 								percentage_of: {
 									select: {
 										name: true,
 										is_deduction: true,
-										service_charge_field: true,
 										value: {
 											select: {
 												value: true,
@@ -107,15 +105,35 @@ export async function loader({
 														id: true,
 													},
 												},
+												employee: {
+													select: {
+														id: true,
+													},
+												},
 											},
 											where: {
-												month: {
-													lte: parseInt(month),
-												},
-												year: {
-													lte: parseInt(year),
-												},
+												OR: [
+													{
+														year: {
+															lt: parseInt(year),
+														},
+													},
+													{
+														month: {
+															lte: parseInt(month),
+														},
+														year: {
+															equals: parseInt(year),
+														},
+													},
+												],
 											},
+											orderBy: [
+												{ year: 'desc' },
+												{ month: 'desc' },
+												{ id: 'desc' },
+											],
+											take: 1,
 										},
 									},
 								},
@@ -138,18 +156,41 @@ export async function loader({
 												id: true,
 											},
 										},
+										employee: {
+											select: {
+												id: true,
+											},
+										},
 									},
 									where: {
-										month: {
-											lte: parseInt(month),
-										},
-										year: {
-											lte: parseInt(year),
-										},
+										OR: [
+											{
+												year: {
+													lt: parseInt(year),
+												},
+											},
+											{
+												month: {
+													lte: parseInt(month),
+												},
+												year: {
+													equals: parseInt(year),
+												},
+											},
+										],
 									},
+									orderBy: [
+										{ year: 'desc' },
+										{ month: 'desc' },
+										{ id: 'desc' },
+									],
+									take: 1,
 								},
 							},
-							orderBy: { sort_index: 'asc' },
+							where: {
+								is_statutory: false,
+							},
+							orderBy: { sort_id: 'asc' },
 						},
 					},
 				},
@@ -216,7 +257,7 @@ export async function action(args: ActionFunctionArgs) {
 	return extraFilterAction(args)
 }
 
-export default function IndexPaymentData() {
+export default function IndexRoutePaymentData() {
 	const {
 		data,
 		count,
@@ -231,7 +272,7 @@ export default function IndexPaymentData() {
 	const { CSVDownloader } = useCSVDownloader()
 
 	const [searchParam, setSearchParam] = useSearchParams()
-	const { handleMouseEnter, handleMouseLeave } = useMouseEvent({
+	const { handleEnter, handleLeave } = useMouseEvent({
 		searchParam,
 		setSearchParam,
 	})
@@ -267,7 +308,7 @@ export default function IndexPaymentData() {
 		)
 	} else {
 		children = (
-			<PaymentDataForProjectLocationList
+			<PaymentDataForMasterList
 				data={data}
 				month={month}
 				year={year}
@@ -304,12 +345,10 @@ export default function IndexPaymentData() {
 							<Button
 								variant="accent"
 								className="h-full gap-2 rounded-sm px-3"
-								onMouseEnter={handleMouseEnter}
-								onMouseLeave={handleMouseLeave}
-								onFocus={() => {
-									searchParam.set('export', 'true')
-									setSearchParam(searchParam)
-								}}
+								onMouseEnter={handleEnter}
+								onMouseLeave={handleLeave}
+								onFocus={handleEnter}
+								onBlur={handleLeave}
 							>
 								<CSVDownloader
 									className="flex items-center gap-2"

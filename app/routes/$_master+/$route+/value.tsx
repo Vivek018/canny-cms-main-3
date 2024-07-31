@@ -3,25 +3,20 @@ import {
 	json,
 	type LoaderFunctionArgs,
 } from '@remix-run/node'
-import {
-	Form,
-	Link,
-	redirect,
-	useLoaderData,
-	useSearchParams,
-} from '@remix-run/react'
+import { Form, Link, useLoaderData, useSearchParams } from '@remix-run/react'
 import { useEffect, useState } from 'react'
 import { columns } from '@/components/columns'
 import { DataTable } from '@/components/data-table'
-import { DetailsSelector } from '@/components/filter-selector'
+import { ExtraFilter } from '@/components/extra-filter'
 import { Modal } from '@/components/modal'
 import { PaginationButtons } from '@/components/pagination-buttons'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Icon } from '@/components/ui/icon'
 import { defaultMonth, defaultYear, TAB_PAGE_SIZE } from '@/constant'
 import { useIsDocument } from '@/utils/clients/is-document'
-import { cn, getTableHeaders, getYears, months } from '@/utils/misx'
+import { cn, getTableHeaders } from '@/utils/misx'
 import { getData } from '@/utils/servers/data.server'
+import { extraFilterAction } from '@/utils/servers/misx.server'
 
 const name = 'value'
 
@@ -48,51 +43,21 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 	})
 }
 
-export async function action({ request }: ActionFunctionArgs) {
-	const formData = await request.formData()
-	const url = new URL(request.url)
-	const month = formData.get('month')
-	const year = formData.get('year')
-
-	const first = formData.get('first')
-	const prev = formData.get('prev')
-	const next = formData.get('next')
-	const last = formData.get('last')
-
-	if (first === 'true') {
-		url.searchParams.set('page', '1')
-	} else if (prev) {
-		if (parseInt(prev.toString()) >= 1)
-			url.searchParams.set('page', prev.toString())
-	} else if (next) {
-		url.searchParams.set('page', next.toString())
-	} else if (last) {
-		url.searchParams.set('page', last.toString())
-	}
-
-	if (month && month !== '0' && month !== 'none') {
-		url.searchParams.set('month', month.toString())
-	}
-
-	if (year && year !== '0' && year !== 'none') {
-		url.searchParams.set('year', year.toString())
-	}
-
-	return redirect(url.toString())
+export async function action(args: ActionFunctionArgs) {
+	return extraFilterAction(args)
 }
 
 export default function Value() {
 	const { data, count, page, month, year, route }: any =
 		useLoaderData<typeof loader>()
-	const monthList = months
-	const yearList = getYears(10)
-
 	const [searchParam, setSearchParam] = useSearchParams()
 	const [showDelete, setShowDelete] = useState(false)
 	const [rowSelection, setRowSelection] = useState({})
 	const [rows, setRows] = useState<any>()
 
-	const datasHeader = data ? getTableHeaders(data, ['id', 'company', 'project']) : []
+	const datasHeader = data
+		? getTableHeaders(data, ['id', 'company', 'project'])
+		: []
 
 	const { isDocument } = useIsDocument()
 
@@ -103,7 +68,7 @@ export default function Value() {
 	}, [page])
 
 	return (
-		<div className="flex flex-col h-full">
+		<div className="flex h-full flex-col">
 			<Modal
 				link={`/${name}/${route}/${name?.toLowerCase()}`}
 				modalClassName={cn(!showDelete && 'hidden')}
@@ -146,34 +111,11 @@ export default function Value() {
 			</Modal>
 			<div className="mb-1 mt-3.5 flex justify-between gap-6">
 				<Form method="POST" className="flex gap-2">
-					<DetailsSelector
-						label="value"
-						list={monthList}
-						name="month"
-						defaultValue={month}
-						onChange={(e: any) => {
-							searchParam.set('month', e.target.value)
-							setSearchParam(searchParam)
-						}}
-						noLabel={true}
-						noNone={true}
-						showLabel="label"
-						className="w-min"
-						triggerClassName="w-[130px]"
-					/>
-					<DetailsSelector
-						label="value"
-						list={yearList}
-						name="year"
-						defaultValue={year}
-						onChange={(e: any) => {
-							searchParam.set('year', e.target.value)
-							setSearchParam(searchParam)
-						}}
-						noLabel={true}
-						noNone={true}
-						className="w-min"
-						triggerClassName="w-22"
+					<ExtraFilter
+						month={month}
+						year={year}
+						searchParam={searchParam}
+						setSearchParam={setSearchParam}
 					/>
 					<Button
 						variant="secondary"
@@ -195,7 +137,7 @@ export default function Value() {
 					</Link>
 				</div>
 			</div>
-			<div className='flex-1 max-h-full overflow-scroll'>
+			<div className="max-h-full flex-1 overflow-scroll">
 				<DataTable
 					rowSelection={rowSelection}
 					setRowSelection={setRowSelection}
@@ -204,7 +146,6 @@ export default function Value() {
 						headers: datasHeader,
 						name: name,
 						singleRoute: name,
-						length: 34,
 						page: parseInt(page),
 						pageSize: TAB_PAGE_SIZE,
 					})}

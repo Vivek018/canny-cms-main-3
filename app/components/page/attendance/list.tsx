@@ -8,6 +8,7 @@ type AttendanceListProps = {
 	data: any
 	routeName: string
 	searchParam: string
+	noActions?: boolean
 	month: string
 	year: string
 	page: string
@@ -19,13 +20,16 @@ export const AttendanceList = ({
 	data,
 	routeName,
 	searchParam,
+	noActions = false,
 	month,
 	year,
 	page,
 	count,
 	pageSize,
 }: AttendanceListProps) => {
-	const employeeData = data?.employee.map((employee: any) => {
+	const mapData = data.employee !== undefined ? data.employee : data
+
+	const employeeData = mapData.map((employee: any) => {
 		const { normalPresentDays, overtimeDays } = getAttendanceDays({
 			attendance: employee.attendance,
 		})
@@ -53,17 +57,17 @@ export const AttendanceList = ({
 						headers: datasHeader,
 						name: 'employees',
 						singleRoute: 'employee',
-						length: 20,
 						extraRoute: `attendance?${searchParam}`,
 						page: parseInt(page),
 						pageSize: pageSize,
 						updateLink: `update?${searchParam}`,
 						noSelect: true,
+						noActions: noActions,
 					})}
 					data={employeeData as any}
 				/>
 			</div>
-			<Form method="POST" className="py-2">
+			<Form method="POST">
 				<PaginationButtons page={page} count={count} pageSize={pageSize} />
 			</Form>
 		</div>

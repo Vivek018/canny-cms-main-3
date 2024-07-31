@@ -1,4 +1,4 @@
-import { getTableHeaders, months, transformPaymentData } from '@/utils/misx'
+import { extractPaymentData, getTableHeaders, months } from '@/utils/misx'
 import { columns } from '../../columns'
 import { DataTable } from '../../data-table'
 
@@ -23,14 +23,17 @@ export const PaymentDataForEmployeeList = ({
 			name: payment_field.name,
 			month: months.find(m => m.value === month)?.label,
 			year,
-			value: transformPaymentData({
+			value: extractPaymentData({
 				attendance: data.attendance,
 				payment_field: payment_field,
 				employee: {
+					id: data.id,
 					company_id: data.company_id,
 					project_id: data.project_id,
 					skill_type: data.skill_type,
 				},
+				month: parseInt(month),
+				year: parseInt(year),
 			}),
 		}),
 	)
@@ -47,7 +50,6 @@ export const PaymentDataForEmployeeList = ({
 					headers: datasHeader,
 					name: 'payment_fields',
 					singleRoute: 'payment_Field',
-					length: 40,
 					page: parseInt(page),
 					pageSize: pageSize,
 					noSelect: true,

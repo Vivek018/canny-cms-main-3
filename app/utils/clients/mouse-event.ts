@@ -7,18 +7,18 @@ export function useMouseEvent({
 }) {
 	let exportTimeout: NodeJS.Timeout | null = null
 
-	const handleMouseEnter = () => {
+	const handleEnter = () => {
 		exportTimeout = setTimeout(() => {
 			searchParam.set('export', 'true')
 			setSearchParam(searchParam)
 		}, 500)
 	}
 
-	const handleMouseLeave = () => {
+	const handleLeave = () => {
 		if (exportTimeout) {
 			clearTimeout(exportTimeout)
 			exportTimeout = null
 		}
 	}
-	return {handleMouseEnter, handleMouseLeave}
+	return { handleEnter, handleLeave }
 }

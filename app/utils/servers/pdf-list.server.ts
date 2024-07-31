@@ -16,13 +16,16 @@ export const addressList = [
 
 export const pdfInputList: any = {
 	employees: {
-		unprofessional_behaviour: async () => ({
+		unprofessional_behaviour: () => ({
 			unprofessional_behaviour_context: 'text',
 			unprofessional_behaviour_date: 'date',
 		}),
-		leave_without_information: async () => ({
+		leave_without_information: () => ({
 			leave_without_information_start_date: 'date',
 			leave_without_information_end_date: 'date',
+		}),
+		experience: () => ({
+			no_address: true,
 		}),
 	},
 }
