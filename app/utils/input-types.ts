@@ -245,7 +245,7 @@ export const inputTypes: { [key: string]: any } = {
 		type: { name: 'type', label: 'value', type: types.radio },
 		value_type: { name: 'value_type', label: 'value', type: types.radio },
 		skill_type: { name: 'skill_type', label: 'value', type: types.radio },
-		pay_at_once: { name: 'pay_at_once', label: 'value', type: types.radio },
+		pay_frequency: { name: 'pay_frequency', label: 'value', type: types.radio },
 		month: {
 			name: 'month',
 			showLabel: 'label',

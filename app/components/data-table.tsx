@@ -21,6 +21,7 @@ type DataTableProps<TData> = {
 	setRowSelection?: React.Dispatch<React.SetStateAction<any>>
 	setRows?: React.Dispatch<React.SetStateAction<any>>
 	className?: string
+	cellClassName?: string
 }
 
 export function DataTable<TData>({
@@ -30,6 +31,7 @@ export function DataTable<TData>({
 	setRowSelection,
 	setRows,
 	className,
+  cellClassName,
 }: DataTableProps<TData>) {
 	const table = useReactTable({
 		data,
@@ -90,7 +92,7 @@ export function DataTable<TData>({
 							>
 								{row.getVisibleCells().map(cell => {
 									return (
-										<TableCell key={cell.id} className="min-w-max">
+										<TableCell key={cell.id} className={cn("min-w-max", cellClassName)}>
 											{flexRender(
 												cell.column.columnDef.cell,
 												cell.getContext(),

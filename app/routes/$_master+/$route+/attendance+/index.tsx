@@ -73,25 +73,21 @@ export async function loader({
 				holiday: true,
 				present: true,
 				no_of_hours: true,
-				employee: { select: { id: true, full_name: true } },
-			},
-			where: {
-				...whereClause,
-				AND: [
-					{
-						employee: {
-							joining_date: {
-								lte: new Date(`${month}/31/${year}`),
-							},
-						},
-					},
-					{
-						date: {
-							gte: new Date(`${month}/1/${year}`),
+				employee: {
+					select: { id: true, full_name: true },
+					where: {
+						joining_date: {
 							lte: new Date(`${month}/31/${year}`),
 						},
 					},
-				],
+				},
+			},
+			where: {
+				...whereClause,
+				date: {
+					gte: new Date(`${month}/1/${year}`),
+					lte: new Date(`${month}/31/${year}`),
+				},
 			},
 		})
 	} else if (master !== 'employees' && !getAttendance) {

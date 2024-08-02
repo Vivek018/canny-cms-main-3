@@ -1,5 +1,5 @@
 import { Form } from '@remix-run/react'
-import { getAttendanceDays, getTableHeaders, months } from '@/utils/misx'
+import { cn, getAttendanceDays, getTableHeaders, months } from '@/utils/misx'
 import { columns } from '../../columns'
 import { DataTable } from '../../data-table'
 import { PaginationButtons } from '../../pagination-buttons'
@@ -14,6 +14,8 @@ type AttendanceListProps = {
 	page: string
 	count: number
 	pageSize: number
+	cellClassName?: string
+	paginationButtonClassName?: string
 }
 
 export const AttendanceList = ({
@@ -26,6 +28,8 @@ export const AttendanceList = ({
 	page,
 	count,
 	pageSize,
+  cellClassName,
+  paginationButtonClassName,
 }: AttendanceListProps) => {
 	const mapData = data.employee !== undefined ? data.employee : data
 
@@ -65,9 +69,10 @@ export const AttendanceList = ({
 						noActions: noActions,
 					})}
 					data={employeeData as any}
+					cellClassName={cellClassName}
 				/>
 			</div>
-			<Form method="POST">
+			<Form method="POST" className={cn('py-2.5', paginationButtonClassName)}>
 				<PaginationButtons page={page} count={count} pageSize={pageSize} />
 			</Form>
 		</div>

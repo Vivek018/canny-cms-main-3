@@ -24,6 +24,8 @@ model Company {
   document Document[]
   bill     Bill[]
   value    Value[]
+
+  @@index([created_at, id])
 }
 
 model Project {
@@ -40,11 +42,13 @@ model Project {
   bill     Bill[]
   vehicle  Vehicle[]
   value    Value[]
+
+  @@index([created_at, id])
 }
 
 model Project_Location {
   id          String   @id @default(cuid())
-  district    String
+  district    String   @unique
   city        String
   state       String
   postal_code Int?     @unique
@@ -59,6 +63,8 @@ model Project_Location {
   payment_field Payment_Field[]
   document      Document[]
   bill          Bill[]
+
+  @@index([created_at, id])
 }
 
 model Employee {
@@ -94,9 +100,17 @@ model Employee {
   attendance      Attendance[]
   bank_detail     Bank_Details?
   advance_payment Advance_Payment[]
-  vehicle         Vehicle?
   document        Document[]
   bill            Bill[]
+  value           Value[]
+
+  @@index([company_id])
+  @@index([project_id])
+  @@index([project_location_id])
+  @@index([company_id, project_id])
+  @@index([project_id, project_location_id])
+  @@index([company_id, project_id, project_location_id])
+  @@index([created_at, id])
 }
 
 model Bank_Details {
@@ -108,6 +122,9 @@ model Bank_Details {
 
   employee_id String   @unique
   employee    Employee @relation(fields: [employee_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([employee_id])
+  @@index([created_at, id])
 }
 
 model Attendance {
@@ -121,15 +138,21 @@ model Attendance {
 
   employee_id String?
   employee    Employee? @relation(fields: [employee_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([date, present])
+  @@index([date, employee_id])
+  @@index([date, present, employee_id])
+  @@index([created_at, id])
 }
 
 model Payment_Field {
   id                   String   @id @default(cuid())
   name                 String   @unique
   description          String?
-  sort_index           Int?
+  sort_id              Int      @default(0)
+  is_statutory         Boolean  @default(false)
+  eligible_after_years Float    @default(0)
   is_deduction         Boolean  @default(false)
-  service_charge_field Boolean  @default(false)
   created_at           DateTime @default(now())
   updated_at           DateTime @updatedAt
 
@@ -138,26 +161,35 @@ model Payment_Field {
 
   value            Value[]
   project_location Project_Location[]
+
+  @@index([is_statutory])
+  @@index([is_deduction])
+  @@index([sort_id])
+  @@index([created_at, id])
 }
 
 model Value {
-  id         String   @id @default(cuid())
-  value      Float
-  max_value  Float?
-  type       String   @default("fixed")
-  value_type String   @default("daily")
-  skill_type String   @default("all")
-  month      Int
-  year       Int
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  id            String   @id @default(cuid())
+  value         Float
+  max_value     Float?
+  type          String   @default("fixed")
+  value_type    String   @default("daily")
+  skill_type    String   @default("all")
+  pay_frequency String   @default("month")
+  month         Int
+  year          Int
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
 
   payment_field_id String
   payment_field    Payment_Field @relation(fields: [payment_field_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
   company          Company[]
   project          Project[]
+  employee         Employee[]
 
   @@unique([payment_field_id, month, year, value])
+  @@index([payment_field_id, month, year])
+  @@index([created_at, id])
 }
 
 model User {
@@ -180,6 +212,8 @@ model User {
   project_location    Project_Location? @relation(fields: [project_location_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
   advance_payment Advance_Payment[]
+
+  @@index([created_at, id])
 }
 
 model User_Role {
@@ -189,6 +223,8 @@ model User_Role {
   updated_at DateTime @updatedAt
 
   user User[]
+
+  @@index([created_at, id])
 }
 
 model Advance_Payment {
@@ -205,6 +241,11 @@ model Advance_Payment {
   user        User?     @relation(fields: [user_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
   employee_id String?
   employee    Employee? @relation(fields: [employee_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([user_id])
+  @@index([employee_id])
+  @@index([employee_id, user_id])
+  @@index([created_at, id])
 }
 
 model Bill {
@@ -242,20 +283,29 @@ model Document {
   project_location    Project_Location? @relation(fields: [project_location_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
   vehicle_id          String?
   vehicle             Vehicle?          @relation(fields: [vehicle_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([employee_id])
+  @@index([company_id])
+  @@index([project_id])
+  @@index([project_location_id])
+  @@index([vehicle_id])
+  @@index([company_id, project_id])
+  @@index([company_id, project_id, project_location_id])
+  @@index([created_at, id])
 }
 
 model Vehicle {
-  id            String   @id @default(cuid())
-  name          String
-  number        String
-  type          String   @default("car")
-  year_bought   Int?
-  kms_driven    Int?
-  other_details String?
-  status        String   @default("active")
-  price         Float?
-  created_at    DateTime @default(now())
-  updated_at    DateTime @updatedAt
+  id               String   @id @default(cuid())
+  name             String
+  number           String
+  type             String   @default("car")
+  year_bought      Int?
+  total_kms_driven Int?
+  other_details    String?
+  status           String   @default("active")
+  price            Float?
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
 
   company_id          String?
   company             Company?          @relation(fields: [company_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
@@ -263,8 +313,56 @@ model Vehicle {
   project             Project?          @relation(fields: [project_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
   project_location_id String?
   project_location    Project_Location? @relation(fields: [project_location_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
-  employee_id         String?           @unique
-  employee            Employee?         @relation(fields: [employee_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
-  document Document[]
+  document        Document[]
+  vehicle_monthly Vehicle_Monthly[]
+
+  @@index([company_id])
+  @@index([project_id])
+  @@index([project_location_id])
+  @@index([company_id, project_id])
+  @@index([project_id, project_location_id])
+  @@index([company_id, project_id, project_location_id])
+  @@index([created_at, id])
+}
+
+model Vehicle_Monthly {
+  id         String   @id @default(cuid())
+  month      Int
+  year       Int
+  kms_driven Int
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  vehicle_id String
+  vehicle    Vehicle @relation(fields: [vehicle_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([month, year, vehicle_id])
+  @@index([month, year, vehicle_id])
+}
+
+model No_Of_Data {
+  id                  String   @id @default(cuid())
+  belongs_to          String
+  no_of_data          Int
+  month               Int
+  year                Int
+  company_id          String?
+  project_id          String?
+  project_location_id String?
+  created_at          DateTime @default(now())
+  updated_at          DateTime @updatedAt
+
+  @@unique([belongs_to, month, year])
+  @@unique([belongs_to, month, year, company_id])
+  @@unique([belongs_to, month, year, project_id])
+  @@unique([belongs_to, month, year, project_location_id])
+  @@unique([belongs_to, month, year, company_id, project_id])
+  @@unique([belongs_to, month, year, company_id, project_location_id])
+  @@unique([belongs_to, month, year, project_id, project_location_id])
+  @@unique([belongs_to, month, year, company_id, project_id, project_location_id])
+  @@index([belongs_to, month, year])
+  @@index([belongs_to, month, year, company_id])
+  @@index([belongs_to, month, year, project_id])
+  @@index([belongs_to, month, year, company_id, project_id])
 }

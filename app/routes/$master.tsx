@@ -306,6 +306,7 @@ export default function MasterIndex() {
 					})}
 					data={data}
 					className={!datasHeader ? 'hidden' : 'flex-1'}
+					cellClassName="h-[46px]"
 				/>
 				<Form method="POST" action={`/filters/${name}`}>
 					{filters ? (

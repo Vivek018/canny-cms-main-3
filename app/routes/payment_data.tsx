@@ -54,14 +54,17 @@ export async function loader({ request }: LoaderFunctionArgs) {
 						select: {
 							name: true,
 							is_deduction: true,
+							eligible_after_years: true,
 							percentage_of: {
 								select: {
 									name: true,
 									is_deduction: true,
+									eligible_after_years: true,
 									value: {
 										select: {
 											value: true,
 											max_value: true,
+											pay_frequency: true,
 											type: true,
 											value_type: true,
 											skill_type: true,
@@ -88,6 +91,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
 												},
 											],
 										},
+										orderBy: [
+											{ year: 'desc' },
+											{ month: 'desc' },
+											{ id: 'desc' },
+										],
+										take: 1,
 									},
 								},
 							},
@@ -98,6 +107,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 									type: true,
 									value_type: true,
 									skill_type: true,
+									pay_frequency: true,
 									month: true,
 									year: true,
 									company: { select: { id: true } },
@@ -121,6 +131,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
 										},
 									],
 								},
+								orderBy: [{ year: 'desc' }, { month: 'desc' }, { id: 'desc' }],
+								take: 1,
 							},
 						},
 						where: {
@@ -205,10 +217,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
 							select: {
 								name: true,
 								is_deduction: true,
+								eligible_after_years: true,
 								percentage_of: {
 									select: {
 										name: true,
 										is_deduction: true,
+										eligible_after_years: true,
 										value: {
 											select: {
 												value: true,
@@ -216,6 +230,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 												type: true,
 												value_type: true,
 												skill_type: true,
+												pay_frequency: true,
 												month: true,
 												year: true,
 												company: { select: { id: true } },
@@ -239,6 +254,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
 													},
 												],
 											},
+											orderBy: [
+												{ year: 'desc' },
+												{ month: 'desc' },
+												{ id: 'desc' },
+											],
+											take: 1,
 										},
 									},
 								},
@@ -249,6 +270,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 										type: true,
 										value_type: true,
 										skill_type: true,
+										pay_frequency: true,
 										month: true,
 										year: true,
 										company: { select: { id: true } },
@@ -272,6 +294,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
 											},
 										],
 									},
+									orderBy: [
+										{ year: 'desc' },
+										{ month: 'desc' },
+										{ id: 'desc' },
+									],
+									take: 1,
 								},
 							},
 							where: {
@@ -414,6 +442,8 @@ export default function PaymentData() {
 					routeName={'payment_data'}
 					count={count}
 					pageSize={PAGE_SIZE}
+					cellClassName="h-[46px]"
+					paginationButtonClassName="py-0"
 				/>
 			</div>
 		</div>

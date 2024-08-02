@@ -1,13 +1,18 @@
 import { type NavList } from 'types'
 
-export const defaultMonth = (new Date().getMonth() + 1).toString()
+export const defaultMonth = (new Date().getMonth()).toString()
 export const defaultYear = new Date().getFullYear().toString()
 export const defaultDay = new Date().getDate().toString()
 
-export const PAGE_SIZE = 15
-export const TAB_PAGE_SIZE = 12
+export const PAGE_SIZE = 12
+export const TAB_PAGE_SIZE = 8
 export const MAX_DATA_LENGTH = 400
 export const NORMAL_DAY_HOURS = 8
+
+export const MillisecondsInASecond = 1000
+export const SecondsInAnHour = 3600
+export const HoursInADay = 24
+export const DaysInAYear = 365
 
 export const NO_IMAGE = '/no_image.jpeg'
 

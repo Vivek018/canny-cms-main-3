@@ -277,6 +277,8 @@ export default function Attendance() {
 					page={page}
 					count={count}
 					pageSize={PAGE_SIZE}
+					paginationButtonClassName="py-0"
+					cellClassName="h-[46px]"
 				/>
 			</div>
 		</div>

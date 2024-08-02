@@ -3,7 +3,15 @@ import { type ClassValue, clsx } from 'clsx'
 import { useEffect, useMemo, useRef } from 'react'
 import { useSpinDelay } from 'spin-delay'
 import { twMerge } from 'tailwind-merge'
-import { NORMAL_DAY_HOURS } from '@/constant'
+import {
+	DaysInAYear,
+	defaultMonth,
+	defaultYear,
+	HoursInADay,
+	MillisecondsInASecond,
+	NORMAL_DAY_HOURS,
+	SecondsInAnHour,
+} from '@/constant'
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs))
@@ -404,33 +412,91 @@ export const transformAttendance = ({
 	return returnData.flat()
 }
 
+export const checkEligibility = ({
+	fromDate,
+	toDate,
+	noOfYears,
+}: {
+	fromDate: Date
+	toDate: Date
+	noOfYears: number
+}) => {
+	const diffInYears =
+		(toDate?.getTime() - fromDate?.getTime()) /
+		(MillisecondsInASecond * SecondsInAnHour * HoursInADay * DaysInAYear)
+	return diffInYears >= noOfYears
+}
+
+export const getDateDifference = ({
+	fromDate,
+	toDate,
+}: {
+	fromDate: Date
+	toDate: Date
+}) => {
+	const diffInMilliseconds = toDate.getTime() - fromDate.getTime()
+	const diffInYears = Math.floor(
+		diffInMilliseconds /
+			(MillisecondsInASecond * SecondsInAnHour * HoursInADay * DaysInAYear),
+	)
+	const diffInMonths = Math.floor(
+		diffInMilliseconds /
+			(MillisecondsInASecond * SecondsInAnHour * HoursInADay * 30),
+	)
+
+	return {
+		years: diffInYears,
+		months: diffInMonths,
+	}
+}
+
+export const getEligilityDate = (fromDate: Date, noOfYears: number): Date => {
+	const millisecondsInASecond = 1000
+	const secondsInAnHour = 3600
+	const hoursInADay = 24
+	const daysInAYear = 365
+
+	const toDateMilliseconds =
+		fromDate.getTime() +
+		noOfYears *
+			millisecondsInASecond *
+			secondsInAnHour *
+			hoursInADay *
+			daysInAYear
+	const toDate = new Date(toDateMilliseconds)
+	return toDate
+}
+
 export const extractPaymentData = ({
 	employee,
 	payment_field,
 	attendance,
 	month,
 	year,
+	calculation = 'monthly',
 }: {
 	employee: {
-		skill_type: string
 		id: string
+		joining_date: Date
+		skill_type: string
 		company_id: string
 		project_id: string
 	}
 	payment_field: {
 		name: string
+		eligible_after_years: number
 		is_deduction: boolean
-		skill_type: string
 		percentage_of?: {
 			name: string
+			eligible_after_years: number
 			is_deduction: boolean
-			skill_type: string
 			value: {
 				value: number
 				max_value: number
 				type: string
 				value_type: string
 				skill_type: string
+				pay_frequency: string
 				month: number
 				year: number
 				company: { id: string }[]
@@ -444,6 +510,7 @@ export const extractPaymentData = ({
 			type: string
 			value_type: string
 			skill_type: string
+			pay_frequency: string
 			month: number
 			year: number
 			company: { id: string }[]
@@ -451,19 +518,32 @@ export const extractPaymentData = ({
 			employee: { id: string }[]
 		}[]
 	}
-	attendance: { present: boolean; holiday: boolean; no_of_hours: number }[]
+	attendance?: { present: boolean; holiday: boolean; no_of_hours: number }[]
 	month: number
 	year: number
+	calculation?: string
 }) => {
 	let value = 0
-	const { normalPresentDays, overtimeDays } = getAttendanceDays({
-		attendance,
-	})
+	const { normalPresentDays, overtimeDays } = attendance
+		? getAttendanceDays({
+				attendance,
+			})
+		: { normalPresentDays: 0, overtimeDays: 0 }
 
 	const paymentFieldValues = payment_field?.value
 	if (
-		paymentFieldValues?.length &&
-		(normalPresentDays > 0 || overtimeDays > 0)
+		(paymentFieldValues?.length &&
+			checkEligibility({
+				fromDate:
+					employee.joining_date instanceof Date
+						? employee.joining_date
+						: new Date(employee.joining_date),
+				toDate: new Date(`${month}/31/${year}`),
+				noOfYears: payment_field.eligible_after_years,
+			}) &&
+			value === 0 &&
+			year < parseInt(defaultYear)) ||
+		(year === parseInt(defaultYear) && month <= parseInt(defaultMonth))
 	) {
 		for (let i = 0; i < paymentFieldValues.length; i++) {
 			const compareCompanyAndProject = Boolean(
@@ -480,7 +560,6 @@ export const extractPaymentData = ({
 			const compareEmployeeSkillType =
 				paymentFieldValues[i].skill_type === employee.skill_type ||
 				paymentFieldValues[i].skill_type === 'all'
-
 			const compareValueValidity =
 				year > paymentFieldValues[i].year ||
 				(year === paymentFieldValues[i].year &&
@@ -489,7 +568,8 @@ export const extractPaymentData = ({
 			if (
 				compareCompanyAndProject !== compareEmployee &&
 				compareEmployeeSkillType &&
-				compareValueValidity
+				compareValueValidity &&
+				value === 0
 			) {
 				if (paymentFieldValues[i].type === 'percentage') {
 					if (payment_field.percentage_of?.length) {
@@ -530,6 +610,20 @@ export const extractPaymentData = ({
 					if (paymentFieldValues[i].type === 'fixed') {
 						value = paymentFieldValues[i].value
 					}
+				} else if (paymentFieldValues[i].value_type === 'yearly') {
+					if (calculation === 'monthly') {
+						if (paymentFieldValues[i].pay_frequency === 'at_end') {
+							if (paymentFieldValues[i].type === 'fixed') {
+								value = paymentFieldValues[i].value / 12
+							}
+						} else {
+							if (paymentFieldValues[i].type === 'fixed') {
+								value = paymentFieldValues[i].value / 12
+							}
+						}
+					} else if (calculation === 'yearly') {
+						value = paymentFieldValues[i].value
+					}
 				}
 			}
 		}
@@ -561,12 +655,7 @@ export const transformPaymentData = ({
 			employeeData[i][paymentFieldData[j].name] =
 				paymentFieldData[j].value.length && employeeData[i].attendance.length
 					? extractPaymentData({
-							employee: {
-								id: employeeData[i].id,
-								company_id: employeeData[i].company_id,
-								project_id: employeeData[i].project_id,
-								skill_type: employeeData[i].skill_type,
-							},
+							employee: employeeData[i],
 							payment_field: paymentFieldData[j],
 							attendance: employeeData[i].attendance,
 							month: parseInt(month),

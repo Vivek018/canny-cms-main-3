@@ -33,7 +33,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 	const month = url.searchParams.get('month') ?? defaultMonth
 	const year = url.searchParams.get('year') ?? defaultYear
 
-	const currentMonth = parseInt(month) - 1
+	const currentMonth = parseInt(month)
 	const currentYear = parseInt(year)
 	const companyId = null
 	const projectId = null
@@ -136,7 +136,11 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 			...noOfDataWhereClause,
 		})
 
-		if (!noOfData || !noOfData[belongs_to]) {
+		if (
+			(!noOfData || !noOfData[belongs_to]) &&
+			month === defaultMonth &&
+			year === defaultYear
+		) {
 			const routeName = singleRouteName[belongs_to]
 			let dataCount = await prisma[routeName as 'user'].count({
 				where: {
@@ -155,17 +159,19 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 			})
 		}
 
-		noOfData[belongs_to].prev_month = await prisma.no_Of_Data.findFirst({
-			select: {
-				no_of_data: true,
-			},
-			where: {
-				belongs_to: noOfDataWhereClause.where.belongs_to,
-				month: noOfDataWhereClause.where.month - 1,
-				year: noOfDataWhereClause.where.year,
-				AND: [...noOfDataWhereClause.where.AND],
-			},
-		})
+		if (noOfData[belongs_to]) {
+			noOfData[belongs_to].prev_month = await prisma.no_Of_Data.findFirst({
+				select: {
+					no_of_data: true,
+				},
+				where: {
+					belongs_to: noOfDataWhereClause.where.belongs_to,
+					month: noOfDataWhereClause.where.month - 1,
+					year: noOfDataWhereClause.where.year,
+					AND: [...noOfDataWhereClause.where.AND],
+				},
+			})
+		}
 	}
 
 	const data: any[] = [{ recent_employees: employees }]
@@ -223,43 +229,56 @@ export default function Dashboard() {
 					{noOfDataBelongsTo?.map((master: any, index: number) => {
 						const item = noOfData[master]
 						const prevMonthNoOfData = item?.prev_month?.no_of_data
-						const isDecreasing = item.no_of_data < prevMonthNoOfData
-						const isIncreasing = item.no_of_data > prevMonthNoOfData
+						const isDecreasing = item?.no_of_data < prevMonthNoOfData
+						const isIncreasing = item?.no_of_data > prevMonthNoOfData
 						return (
-							<div
-								key={index}
-								className="flex flex-1 flex-col gap-4 rounded-md bg-muted px-3 py-2.5"
-							>
-								<h2 className="text-lg font-medium capitalize">
-									Total {item.belongs_to}
-								</h2>
-								<div className="flex w-full items-center justify-between gap-1">
-									<p className="text-lg font-bold md:text-xl xl:text-3xl">
-										{item.no_of_data}
-									</p>
-									{prevMonthNoOfData ? (
-										<div
-											className={cn(
-												'flex flex-col items-start text-[10px] font-medium md:text-xs xl:text-[13px]',
-												isDecreasing && 'text-destructive',
-												isIncreasing && 'text-green-700 dark:text-green-500',
-											)}
-										>
-											<p className="flex gap-1">
-												<Icon
-													name={
-														isDecreasing
-															? 'arrow-bottom-left'
-															: 'arrow-top-right'
-													}
-												/>{' '}
-												{Math.abs(item.no_of_data - prevMonthNoOfData) / 100}%
-											</p>
-											<p className="-mt-0.5">from last month</p>
-										</div>
-									) : (
-										''
+							<div key={index}>
+								<div
+									className={cn(
+										'flex flex-1 flex-col gap-4 rounded-md bg-muted px-3 py-2.5',
+										!item && 'hidden',
 									)}
+								>
+									<h2 className="text-lg font-medium capitalize">
+										Total {item?.belongs_to}
+									</h2>
+									<div className="flex w-full items-center justify-between gap-1">
+										<p className="text-lg font-bold md:text-xl xl:text-3xl">
+											{item?.no_of_data}
+										</p>
+										{prevMonthNoOfData ? (
+											<div
+												className={cn(
+													'flex flex-col items-start text-[10px] font-medium md:text-xs xl:text-[13px]',
+													isDecreasing && 'text-destructive',
+													isIncreasing && 'text-green-700 dark:text-green-500',
+												)}
+											>
+												<p className="flex gap-1">
+													<Icon
+														name={
+															isDecreasing
+																? 'arrow-bottom-left'
+																: 'arrow-top-right'
+														}
+													/>{' '}
+													{Math.abs(item?.no_of_data - prevMonthNoOfData) / 100}
+													%
+												</p>
+												<p className="-mt-0.5">from last month</p>
+											</div>
+										) : (
+											''
+										)}
+									</div>
+								</div>
+								<div
+									className={cn(
+										'flex flex-1 flex-col gap-4 rounded-md bg-muted px-3 py-4',
+										item && 'hidden',
+									)}
+								>
+									<h2 className="text-3xl p-4 text-center font-medium capitalize">No Data</h2>
 								</div>
 							</div>
 						)
@@ -317,6 +336,7 @@ export default function Dashboard() {
 									})}
 									data={itemValue}
 									className={!itemsHeader ? 'hidden' : 'flex-1'}
+                  cellClassName='h-11'
 								/>
 							</div>
 						)

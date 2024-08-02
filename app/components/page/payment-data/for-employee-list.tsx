@@ -28,6 +28,7 @@ export const PaymentDataForEmployeeList = ({
 				payment_field: payment_field,
 				employee: {
 					id: data.id,
+					joining_date: data.joining_date,
 					company_id: data.company_id,
 					project_id: data.project_id,
 					skill_type: data.skill_type,

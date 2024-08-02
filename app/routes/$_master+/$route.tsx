@@ -59,7 +59,7 @@ export default function Route() {
 
 	let children = (
 		<>
-			<div className="flex w-full -mt-2 items-center justify-between">
+			<div className="-mt-2 flex w-full items-center justify-between">
 				<div className="flex gap-4">
 					{imageField ? (
 						<Link
@@ -167,9 +167,7 @@ export default function Route() {
 			<Header
 				title={routeName}
 				goBackLink={
-					master !== 'value' && master !== 'vehicle_monthly'
-						? `/${master}`
-						: '/'
+					master !== 'value' && master !== 'vehicle_monthly' && `/${master}`
 				}
 			>
 				<Link

@@ -1,5 +1,6 @@
-import { Link, NavLink } from '@remix-run/react'
+import { Link, NavLink, useNavigate } from '@remix-run/react'
 import { cn, replaceUnderscore } from '@/utils/misx'
+import { Button, buttonVariants } from './ui/button'
 import { Icon } from './ui/icon'
 
 type HeaderProps = {
@@ -8,7 +9,7 @@ type HeaderProps = {
 	headerLink1?: string
 	headerLink2?: string
 	children?: React.ReactNode
-	goBackLink?: string
+	goBackLink?: string | boolean
 }
 
 export function Header({
@@ -19,6 +20,7 @@ export function Header({
 	children,
 	goBackLink,
 }: HeaderProps) {
+	const navigate = useNavigate()
 	return (
 		<header
 			className={cn(
@@ -30,12 +32,24 @@ export function Header({
 			<div className="flex items-center gap-1">
 				{goBackLink ? (
 					<Link
-						to={goBackLink}
-						className="rounded-sm px-1.5 py-1 hover:bg-muted"
+						to={goBackLink as string}
+						className={buttonVariants({
+							variant: 'ghost',
+							className: 'h-min w-min px-1 py-1',
+						})}
 					>
 						<Icon name="chevron-left" size="lg" />
 					</Link>
-				) : null}
+				) : (
+					<Button
+						variant="ghost"
+						size="icon"
+						className="h-min w-min px-1.5 py-1"
+						onClick={() => navigate(-1)}
+					>
+						<Icon name="chevron-left" size="lg" />
+					</Button>
+				)}
 				<h1 className="w-max text-2xl font-bold capitalize tracking-wide">
 					{replaceUnderscore(title ?? '')}
 				</h1>

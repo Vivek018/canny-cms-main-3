@@ -64,6 +64,7 @@
     "react-papaparse": "^4.4.0",
     "react-pdf": "^8.0.0",
     "react-pdf-html": "^2.0.4",
+    "recharts": "^2.12.7",
     "spin-delay": "^1.2.0",
     "tailwind-merge": "^2.2.2",
     "tailwindcss-animate": "^1.0.7",

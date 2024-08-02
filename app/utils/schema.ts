@@ -271,7 +271,7 @@ export const Schemas: { [key: string]: any } = {
 			.enum(['daily', 'monthly', 'yearly', 'overtime', 'n/a'])
 			.default('daily'),
 		skill_type: z.enum([...skillTypesEnum, 'all']).default('all'),
-		pay_at_once: z.enum(booleanEnum).default('false'),
+		pay_frequency: z.enum(['monthly', 'yearly', 'at_once']).default('monthly'),
 		month: z.number().int().min(1).max(12),
 		year: z.number().int().min(1960).max(new Date().getFullYear()),
 		payment_field: zNumberString.optional(),

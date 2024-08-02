@@ -57,15 +57,22 @@ export const education = [
 ]
 
 export const status = [{ value: 'active' }, { value: 'inactive' }]
-export const payment_field_type = [{ value: 'fixed' }, { value: 'percentage' }]
-export const value_type = [
+export const paymentFieldType = [{ value: 'fixed' }, { value: 'percentage' }]
+export const valueType = [
 	{ value: 'daily' },
 	{ value: 'monthly' },
 	{ value: 'yearly' },
 	{ value: 'overtime' },
 	{ value: 'n/a' },
 ]
-export const skill_type = [
+
+export const payFrequency = [
+	{ value: 'monthly' },
+	{ value: 'yearly' },
+	{ value: 'at_once' },
+]
+
+export const skillType = [
 	{ value: 'skilled' },
 	{ value: 'semi_skilled' },
 	{ value: 'unskilled' },
@@ -112,7 +119,7 @@ export const users = async () =>
 		...paginationOption,
 	})
 
-export const user_roles = async () =>
+export const userRoles = async () =>
 	await prisma.user_Role.findMany({
 		select: {
 			id: true,
@@ -130,7 +137,7 @@ export const projects = async () =>
 		...paginationOption,
 	})
 
-export const project_locations = async () =>
+export const projectLocations = async () =>
 	await prisma.project_Location.findMany({
 		select: {
 			id: true,
@@ -167,7 +174,7 @@ export const vehicles = async (dependency?: string) =>
 		...paginationOption,
 	})
 
-export const payment_fields = async () =>
+export const paymentFields = async () =>
 	await prisma.payment_Field.findMany({
 		select: {
 			id: true,
@@ -194,29 +201,29 @@ export const values = async () =>
 export const getFilterList = (master: string) => {
 	const fitlerArray = {
 		users: async () => ({
-			role: await user_roles(),
+			role: await userRoles(),
 			company: await companies(),
 			project: await projects(),
-			project_location: await project_locations(),
+			project_location: await projectLocations(),
 			last_signed_in: '',
 		}),
 		documents: async () => ({
 			belongs_to: belongsToArray,
 			company: await companies(),
 			project: await projects(),
-			project_location: await project_locations(),
+			project_location: await projectLocations(),
 			vehicle: await vehicles(),
 		}),
 		companies: async () => ({
 			project: await projects(),
-			project_location: await project_locations(),
+			project_location: await projectLocations(),
 		}),
 		employees: async () => ({
 			status: status,
-			skill_type: skill_type,
+			skill_type: skillType,
 			company: await companies(),
 			project: await projects(),
-			project_location: await project_locations(),
+			project_location: await projectLocations(),
 		}),
 		attendances: async () => ({
 			month: months,
@@ -225,7 +232,7 @@ export const getFilterList = (master: string) => {
 		advances: async () => ({
 			company: await companies(),
 			project: await projects(),
-			project_location: await project_locations(),
+			project_location: await projectLocations(),
 			user: await users(),
 			credited: booleanArray,
 		}),
@@ -233,7 +240,7 @@ export const getFilterList = (master: string) => {
 			is_deduction: booleanArray,
 			company: await companies(),
 			project: await projects(),
-			project_location: await project_locations(),
+			project_location: await projectLocations(),
 		}),
 		projects: async () => ({
 			company: await companies(),
@@ -247,7 +254,7 @@ export const getFilterList = (master: string) => {
 			status: status,
 			company: await companies(),
 			project: await projects(),
-			project_location: await project_locations(),
+			project_location: await projectLocations(),
 		}),
 	}
 	return fitlerArray[master as keyof typeof fitlerArray]
@@ -255,9 +262,9 @@ export const getFilterList = (master: string) => {
 
 export const inputList: { [key: string]: any } = {
 	[singleRouteName.users]: async () => {
-		const roles = await user_roles()
+		const roles = await userRoles()
 		const projectList = await projects()
-		const locations = await project_locations()
+		const locations = await projectLocations()
 		const companyList = await companies()
 		return {
 			role: roles,
@@ -269,7 +276,7 @@ export const inputList: { [key: string]: any } = {
 	[singleRouteName.documents]: async (dependency: string) => {
 		const companyList = await companies()
 		const projectList = await projects()
-		const locations = await project_locations()
+		const locations = await projectLocations()
 		const employeeList = await employees(dependency)
 		const vehicleList = await vehicles(dependency)
 		return {
@@ -290,13 +297,13 @@ export const inputList: { [key: string]: any } = {
 	[singleRouteName.employees]: async () => {
 		const companyList = await companies()
 		const projectList = await projects()
-		const projectLocationList = await project_locations()
+		const projectLocationList = await projectLocations()
 		const valueList = await values()
 		return {
 			company: companyList,
 			project: projectList,
 			project_location: projectLocationList,
-			skill_type: skill_type,
+			skill_type: skillType,
 			status: status,
 			gender: gender,
 			education: education,
@@ -316,7 +323,7 @@ export const inputList: { [key: string]: any } = {
 	},
 	[singleRouteName.projects]: async () => {
 		const companyList = await companies()
-		const projectLocationList = await project_locations()
+		const projectLocationList = await projectLocations()
 		return {
 			company: companyList,
 			project_location: projectLocationList,
@@ -324,7 +331,7 @@ export const inputList: { [key: string]: any } = {
 	},
 	[singleRouteName.project_locations]: async () => {
 		const projectList = await projects()
-		const paymentFieldList = await payment_fields()
+		const paymentFieldList = await paymentFields()
 		return {
 			state: statesArray,
 			project: projectList,
@@ -332,8 +339,8 @@ export const inputList: { [key: string]: any } = {
 		}
 	},
 	[singleRouteName.payment_fields]: async () => {
-		const projectLocationList = await project_locations()
-		const paymentFieldList = await payment_fields()
+		const projectLocationList = await projectLocations()
+		const paymentFieldList = await paymentFields()
 		return {
 			project_location: projectLocationList,
 			percentage_of: paymentFieldList,
@@ -352,7 +359,7 @@ export const inputList: { [key: string]: any } = {
 		})
 		const companyList = await companies()
 		const projectList = await projects()
-		const projectLocationList = await project_locations()
+		const projectLocationList = await projectLocations()
 		return {
 			company: companyList,
 			project: projectList,
@@ -372,14 +379,14 @@ export const inputList: { [key: string]: any } = {
 		}
 	},
 	[singleRouteName.value]: async () => {
-		const paymentFieldList = await payment_fields()
+		const paymentFieldList = await paymentFields()
 		const companyList = await companies()
 		const projectList = await projects()
 		return {
-			type: payment_field_type,
-			value_type: value_type,
-			skill_type: [...skill_type, { value: 'all' }],
-			pay_at_once: booleanArray,
+			type: paymentFieldType,
+			value_type: valueType,
+			skill_type: [...skillType, { value: 'all' }],
+			pay_frequency: payFrequency,
 			month: months,
 			year: getYears(65),
 			payment_field: paymentFieldList,

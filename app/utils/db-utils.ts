@@ -122,7 +122,7 @@ export const paymentFields = [
 			value: 540,
 			month: 4,
 			year: 2024,
-			pay_at_once: true,
+			pay_frequency: 'at_end',
 			value_type: 'yearly',
 			skill_type: 'unskilled',
 		},

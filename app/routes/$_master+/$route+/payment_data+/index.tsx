@@ -82,10 +82,12 @@ export async function loader({
 								id: true,
 								name: true,
 								is_deduction: true,
+								eligible_after_years: true,
 								percentage_of: {
 									select: {
 										name: true,
 										is_deduction: true,
+										eligible_after_years: true,
 										value: {
 											select: {
 												value: true,
@@ -93,6 +95,7 @@ export async function loader({
 												type: true,
 												value_type: true,
 												skill_type: true,
+												pay_frequency: true,
 												month: true,
 												year: true,
 												company: {
@@ -144,6 +147,7 @@ export async function loader({
 										type: true,
 										value_type: true,
 										skill_type: true,
+										pay_frequency: true,
 										month: true,
 										year: true,
 										company: {

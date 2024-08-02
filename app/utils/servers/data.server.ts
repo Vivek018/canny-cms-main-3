@@ -921,14 +921,17 @@ export const getData = ({
 											select: {
 												name: true,
 												is_deduction: true,
+												eligible_after_years: true,
 												percentage_of: {
 													select: {
 														name: true,
 														is_deduction: true,
+														eligible_after_years: true,
 														value: {
 															select: {
 																value: true,
 																max_value: true,
+																pay_frequency: true,
 																type: true,
 																value_type: true,
 																skill_type: true,
@@ -939,7 +942,6 @@ export const getData = ({
 																employee: { select: { id: true } },
 															},
 															where: {
-																pay_at_once: false,
 																OR: [
 																	{
 																		year: {
@@ -956,6 +958,12 @@ export const getData = ({
 																	},
 																],
 															},
+															orderBy: [
+																{ year: 'desc' },
+																{ month: 'desc' },
+																{ id: 'desc' },
+															],
+															take: 1,
 														},
 													},
 												},
@@ -963,6 +971,7 @@ export const getData = ({
 													select: {
 														value: true,
 														max_value: true,
+														pay_frequency: true,
 														type: true,
 														value_type: true,
 														skill_type: true,
@@ -989,6 +998,12 @@ export const getData = ({
 															},
 														],
 													},
+													orderBy: [
+														{ year: 'desc' },
+														{ month: 'desc' },
+														{ id: 'desc' },
+													],
+													take: 1,
 												},
 											},
 											where: {

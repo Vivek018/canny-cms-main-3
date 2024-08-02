@@ -17,7 +17,7 @@ import {
 import { prisma } from '@/utils/servers/db.server'
 import {
 	companies,
-	project_locations,
+	projectLocations,
 	projects,
 } from '@/utils/servers/list.server'
 import { extraFilterAction } from '@/utils/servers/misx.server'
@@ -52,10 +52,12 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 						select: {
 							name: true,
 							is_deduction: true,
+							eligible_after_years: true,
 							percentage_of: {
 								select: {
 									name: true,
 									is_deduction: true,
+									eligible_after_years: true,
 									value: {
 										select: {
 											value: true,
@@ -63,6 +65,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 											type: true,
 											value_type: true,
 											skill_type: true,
+											pay_frequency: true,
 											month: true,
 											year: true,
 											company: {
@@ -76,18 +79,9 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 											},
 										},
 										where: {
-											OR: [
-												{
-													year: {
-														lt: parseInt(year),
-													},
-												},
-												{
-													year: {
-														equals: parseInt(year),
-													},
-												},
-											],
+											year: {
+												lte: parseInt(year),
+											},
 										},
 									},
 								},
@@ -99,6 +93,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 									type: true,
 									value_type: true,
 									skill_type: true,
+									pay_frequency: true,
 									month: true,
 									year: true,
 									company: {
@@ -112,25 +107,15 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 									},
 								},
 								where: {
-									OR: [
-										{
-											year: {
-												lt: parseInt(year),
-											},
-										},
-										{
-											year: {
-												equals: parseInt(year),
-											},
-										},
-									],
+									year: {
+										lte: parseInt(year),
+									},
 								},
 							},
 						},
 						where: {
 							id: route,
 						},
-						orderBy: { sort_id: 'asc' },
 					},
 				},
 			},
@@ -181,18 +166,17 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 	})
 
 	for (let i = 0; i < data.length; i++) {
-		const employeeId = data[i].id
-		const paymentFieldData = data[0].project_location?.payment_field[0]
 		for (let j = 1; j <= 12; j++) {
 			data[i][getMonthLabel(j.toString())?.substring(0, 3) + '_' + year] =
 				extractPaymentData({
 					employee: {
 						id: data[i].id,
+						joining_date: data[i].joining_date,
 						company_id: data[i].company_id,
 						project_id: data[i].project_id,
 						skill_type: data[i].skill_type,
 					},
-					payment_field: paymentFieldData,
+					payment_field: data[0].project_location?.payment_field[0],
 					attendance: await prisma.attendance.findMany({
 						select: {
 							no_of_hours: true,
@@ -200,8 +184,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 							holiday: true,
 						},
 						where: {
-							employee_id: employeeId,
-							present: true,
+							employee_id: data[i].id,
 							date: {
 								gte: new Date(`${j}/1/${year}`),
 								lte: new Date(`${j}/31/${year}`),
@@ -220,7 +203,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 		page,
 		companyList: await companies(),
 		projectList: await projects(),
-		projectLocationList: await project_locations(),
+		projectLocationList: await projectLocations(),
 	})
 }
 
