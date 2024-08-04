@@ -178,6 +178,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 		skip: (parseInt(page) - 1) * PAGE_SIZE,
 	})
 
+	const transformedData = transformPaymentData({ data, month, year });
 	const count = await prisma.employee.count({
 		where: {
 			joining_date: {
@@ -347,7 +348,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	}
 
 	return json({
-		data,
+		data: transformedData,
 		count,
 		month,
 		year,

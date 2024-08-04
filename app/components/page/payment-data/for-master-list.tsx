@@ -1,6 +1,6 @@
 import { Form } from '@remix-run/react'
 import { PaginationButtons } from '@/components/pagination-buttons'
-import { cn, getTableHeaders, transformPaymentData } from '@/utils/misx'
+import { cn, getTableHeaders } from '@/utils/misx'
 import { columns } from '../../columns'
 import { DataTable } from '../../data-table'
 
@@ -12,8 +12,8 @@ type AttendanceListProps = {
 	count: number
 	routeName: string
 	pageSize: number
-  cellClassName?: string
-  paginationButtonClassName?: string
+	cellClassName?: string
+	paginationButtonClassName?: string
 }
 
 export const PaymentDataForMasterList = ({
@@ -24,13 +24,11 @@ export const PaymentDataForMasterList = ({
 	count,
 	routeName,
 	pageSize,
-  cellClassName,
+	cellClassName,
 	paginationButtonClassName,
 }: AttendanceListProps) => {
-	const employeeData = transformPaymentData({ data, month, year })
-
-	const datasHeader = employeeData
-		? getTableHeaders(employeeData, [
+	const datasHeader = data
+		? getTableHeaders(data, [
 				'id',
 				'company_id',
 				'project_id',
@@ -56,8 +54,8 @@ export const PaymentDataForMasterList = ({
 						noSelect: true,
 						noActions: true,
 					})}
-					data={employeeData as any}
-          cellClassName={cellClassName}
+					data={data as any}
+					cellClassName={cellClassName}
 				/>
 			</div>
 			<Form method="POST" className={cn('py-2.5', paginationButtonClassName)}>

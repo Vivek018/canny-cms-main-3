@@ -83,6 +83,11 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 												lte: parseInt(year),
 											},
 										},
+										orderBy: [
+											{ year: 'desc' },
+											{ month: 'desc' },
+											{ id: 'desc' },
+										],
 									},
 								},
 							},
@@ -111,6 +116,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 										lte: parseInt(year),
 									},
 								},
+								orderBy: [{ year: 'desc' }, { month: 'desc' }, { id: 'desc' }],
 							},
 						},
 						where: {
@@ -176,7 +182,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 						project_id: data[i].project_id,
 						skill_type: data[i].skill_type,
 					},
-					payment_field: data[0].project_location?.payment_field[0],
+					payment_field: data[i].project_location?.payment_field[0],
 					attendance: await prisma.attendance.findMany({
 						select: {
 							no_of_hours: true,

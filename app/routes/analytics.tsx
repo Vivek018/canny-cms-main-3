@@ -22,7 +22,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 	const month = url.searchParams.get('month') ?? defaultMonth
 	const year = url.searchParams.get('year') ?? defaultYear
 
-	const currentMonth = parseInt(month) - 1
+	const currentMonth = parseInt(month) 
 	const currentYear = parseInt(year)
 	const companyId = null
 	const projectId = null

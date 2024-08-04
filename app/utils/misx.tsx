@@ -4,13 +4,14 @@ import { useEffect, useMemo, useRef } from 'react'
 import { useSpinDelay } from 'spin-delay'
 import { twMerge } from 'tailwind-merge'
 import {
-	DaysInAYear,
+	DAYS_IN_A_MONTH,
+	DAYS_IN_A_YEAR,
 	defaultMonth,
 	defaultYear,
-	HoursInADay,
-	MillisecondsInASecond,
+	HOURS_IN_A_DAY,
+	MILLISECONDS_IN_A_SECOND,
 	NORMAL_DAY_HOURS,
-	SecondsInAnHour,
+	SECONDS_IN_AN_HOUR,
 } from '@/constant'
 
 export function cn(...inputs: ClassValue[]) {
@@ -423,7 +424,10 @@ export const checkEligibility = ({
 }) => {
 	const diffInYears =
 		(toDate?.getTime() - fromDate?.getTime()) /
-		(MillisecondsInASecond * SecondsInAnHour * HoursInADay * DaysInAYear)
+		(MILLISECONDS_IN_A_SECOND *
+			SECONDS_IN_AN_HOUR *
+			HOURS_IN_A_DAY *
+			DAYS_IN_A_YEAR)
 	return diffInYears >= noOfYears
 }
 
@@ -435,13 +439,19 @@ export const getDateDifference = ({
 	toDate: Date
 }) => {
 	const diffInMilliseconds = toDate.getTime() - fromDate.getTime()
-	const diffInYears = Math.floor(
+	const diffInYears = Math.round(
 		diffInMilliseconds /
-			(MillisecondsInASecond * SecondsInAnHour * HoursInADay * DaysInAYear),
+			(MILLISECONDS_IN_A_SECOND *
+				SECONDS_IN_AN_HOUR *
+				HOURS_IN_A_DAY *
+				DAYS_IN_A_YEAR),
 	)
-	const diffInMonths = Math.floor(
+	const diffInMonths = Math.round(
 		diffInMilliseconds /
-			(MillisecondsInASecond * SecondsInAnHour * HoursInADay * 30),
+			(MILLISECONDS_IN_A_SECOND *
+				SECONDS_IN_AN_HOUR *
+				HOURS_IN_A_DAY *
+				DAYS_IN_A_MONTH),
 	)
 
 	return {
@@ -450,7 +460,7 @@ export const getDateDifference = ({
 	}
 }
 
-export const getEligilityDate = (fromDate: Date, noOfYears: number): Date => {
+export const getEligibilityDate = (fromDate: Date, noOfYears: number): Date => {
 	const millisecondsInASecond = 1000
 	const secondsInAnHour = 3600
 	const hoursInADay = 24
@@ -524,108 +534,119 @@ export const extractPaymentData = ({
 	calculation?: string
 }) => {
 	let value = 0
-	const { normalPresentDays, overtimeDays } = attendance
-		? getAttendanceDays({
-				attendance,
-			})
-		: { normalPresentDays: 0, overtimeDays: 0 }
+	const { normalPresentDays = 0, overtimeDays = 0 } = attendance
+		? getAttendanceDays({ attendance })
+		: {}
 
-	const paymentFieldValues = payment_field?.value
+	const paymentFieldValues = payment_field?.value || []
+
+	if (paymentFieldValues.length === 0) {
+		return value
+	}
+	const isEligible =
+		employee.joining_date instanceof Date
+			? checkEligibility({
+					fromDate: employee.joining_date,
+					toDate: new Date(`${month}/31/${year}`),
+					noOfYears: payment_field.eligible_after_years,
+				})
+			: false
+
 	if (
-		(paymentFieldValues?.length &&
-			checkEligibility({
-				fromDate:
-					employee.joining_date instanceof Date
-						? employee.joining_date
-						: new Date(employee.joining_date),
-				toDate: new Date(`${month}/31/${year}`),
-				noOfYears: payment_field.eligible_after_years,
-			}) &&
-			value === 0 &&
-			year < parseInt(defaultYear)) ||
-		(year === parseInt(defaultYear) && month <= parseInt(defaultMonth))
+		!isEligible ||
+		year > parseInt(defaultYear) ||
+		(year === parseInt(defaultYear) && month > parseInt(defaultMonth))
 	) {
-		for (let i = 0; i < paymentFieldValues.length; i++) {
-			const compareCompanyAndProject = Boolean(
-				paymentFieldValues[i].company.find(
-					({ id }) => id === employee.company_id,
-				) &&
-					paymentFieldValues[i].project.find(
-						({ id }) => id === employee.project_id,
-					),
-			)
-			const compareEmployee = Boolean(
-				paymentFieldValues[i].employee.find(({ id }) => id === employee.id),
-			)
-			const compareEmployeeSkillType =
-				paymentFieldValues[i].skill_type === employee.skill_type ||
-				paymentFieldValues[i].skill_type === 'all'
-			const compareValueValidity =
-				year > paymentFieldValues[i].year ||
-				(year === paymentFieldValues[i].year &&
-					month >= paymentFieldValues[i].month)
+		return value
+	}
 
+	for (const paymentValue of paymentFieldValues) {
+		const isCompanyAndProjectMatch =
+			paymentValue.company.some(({ id }) => id === employee.company_id) &&
+			paymentValue.project.some(({ id }) => id === employee.project_id)
+
+		const isEmployeeMatch = paymentValue.employee.some(
+			({ id }) => id === employee.id,
+		)
+		const isSkillTypeMatch =
+			paymentValue.skill_type === employee.skill_type ||
+			paymentValue.skill_type === 'all'
+		const isValueValid =
+			year > paymentValue.year ||
+			(year === paymentValue.year && month >= paymentValue.month)
+
+		if (
+			(isCompanyAndProjectMatch || isEmployeeMatch) &&
+			isSkillTypeMatch &&
+			isValueValid
+		) {
 			if (
-				compareCompanyAndProject !== compareEmployee &&
-				compareEmployeeSkillType &&
-				compareValueValidity &&
-				value === 0
+				paymentValue.type === 'percentage' &&
+				payment_field.percentage_of?.length
 			) {
-				if (paymentFieldValues[i].type === 'percentage') {
-					if (payment_field.percentage_of?.length) {
-						value = parseFloat(
-							Math.min(
-								(paymentFieldValues[i].value *
-									(paymentFieldValues[i].max_value ?? Number.MAX_VALUE)) /
-									100,
-								payment_field.percentage_of.reduce(
-									(total, percentage_payment_field̉) => {
-										const percentageValue = extractPaymentData({
-											employee,
-											payment_field: percentage_payment_field̉,
-											attendance,
-											month,
-											year,
-										})
-										return (
-											total +
-											(percentageValue * paymentFieldValues[i].value) / 100
-										)
-									},
-									0,
-								),
-							).toFixed(2),
-						)
-					}
-				}
-				if (paymentFieldValues[i].value_type === 'daily') {
-					if (paymentFieldValues[i].type === 'fixed') {
-						value = paymentFieldValues[i].value * normalPresentDays
-					}
-				} else if (paymentFieldValues[i].value_type === 'overtime') {
-					if (paymentFieldValues[i].type === 'fixed') {
-						value = paymentFieldValues[i].value * overtimeDays
-					}
-				} else if (paymentFieldValues[i].value_type === 'monthly') {
-					if (paymentFieldValues[i].type === 'fixed') {
-						value = paymentFieldValues[i].value
-					}
-				} else if (paymentFieldValues[i].value_type === 'yearly') {
-					if (calculation === 'monthly') {
-						if (paymentFieldValues[i].pay_frequency === 'at_end') {
-							if (paymentFieldValues[i].type === 'fixed') {
-								value = paymentFieldValues[i].value / 12
+				value = parseFloat(
+					Math.min(
+						(paymentValue.value *
+							(paymentValue.max_value ?? Number.MAX_VALUE)) /
+							100,
+						payment_field.percentage_of.reduce(
+							(total, percentagePaymentField) => {
+								const percentageValue = extractPaymentData({
+									employee,
+									payment_field: percentagePaymentField,
+									attendance,
+									month,
+									year,
+								})
+								return total + (percentageValue * paymentValue.value) / 100
+							},
+							0,
+						),
+					).toFixed(2),
+				)
+			} else {
+				switch (paymentValue.value_type) {
+					case 'daily':
+						value =
+							paymentValue.type === 'fixed'
+								? paymentValue.value * normalPresentDays
+								: value
+						break
+					case 'overtime':
+						value =
+							paymentValue.type === 'fixed'
+								? paymentValue.value * overtimeDays
+								: value
+						break
+					case 'monthly':
+						value = paymentValue.type === 'fixed' ? paymentValue.value : value
+						break
+					case 'yearly':
+						if (calculation === 'monthly') {
+							if (paymentValue.pay_frequency === 'at_once') {
+								const yearsDifference = getDateDifference({
+									fromDate: employee.joining_date,
+									toDate: new Date(`${month}/31/${year}`),
+								}).years
+								value =
+									paymentValue.type === 'fixed'
+										? paymentValue.value * yearsDifference
+										: value
+							} else {
+								value =
+									paymentValue.type === 'fixed'
+										? paymentValue.value / 12
+										: value
 							}
-						} else {
-							if (paymentFieldValues[i].type === 'fixed') {
-								value = paymentFieldValues[i].value / 12
-							}
+						} else if (calculation === 'yearly') {
+							value = paymentValue.value
 						}
-					} else if (calculation === 'yearly') {
-						value = paymentFieldValues[i].value
-					}
+						break
+					default:
+						break
 				}
 			}
+			break
 		}
 	}
 
@@ -649,7 +670,7 @@ export const transformPaymentData = ({
 	}))
 
 	for (let i = 0; i < employeeData?.length; i++) {
-		const paymentFieldData = employeeData[0].project_location.payment_field
+		const paymentFieldData = employeeData[i].project_location.payment_field
 
 		for (let j = 0; j < paymentFieldData.length; j++) {
 			employeeData[i][paymentFieldData[j].name] =

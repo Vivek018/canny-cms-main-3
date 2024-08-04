@@ -9,10 +9,11 @@ export const TAB_PAGE_SIZE = 8
 export const MAX_DATA_LENGTH = 400
 export const NORMAL_DAY_HOURS = 8
 
-export const MillisecondsInASecond = 1000
-export const SecondsInAnHour = 3600
-export const HoursInADay = 24
-export const DaysInAYear = 365
+export const MILLISECONDS_IN_A_SECOND = 1000
+export const SECONDS_IN_AN_HOUR = 3600
+export const HOURS_IN_A_DAY = 24
+export const DAYS_IN_A_YEAR = 365
+export const DAYS_IN_A_MONTH = 30
 
 export const NO_IMAGE = '/no_image.jpeg'
 

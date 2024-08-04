@@ -20,7 +20,13 @@ import {
 } from '@/constant'
 import { useIsDocument } from '@/utils/clients/is-document'
 import { useMouseEvent } from '@/utils/clients/mouse-event'
-import { cn, flattenObject, transformPaymentData } from '@/utils/misx'
+import {
+	cn,
+	extractPaymentData,
+	flattenObject,
+	months,
+	transformPaymentData,
+} from '@/utils/misx'
 import { getData } from '@/utils/servers/data.server'
 import { prisma } from '@/utils/servers/db.server'
 import { companies, projects } from '@/utils/servers/list.server'
@@ -56,9 +62,10 @@ export async function loader({
 	let projectList = null
 
 	if (master === 'employees' || getPaymentData) {
-		data = await prisma.employee.findFirst({
+		const employeeData = await prisma.employee.findFirst({
 			select: {
 				id: true,
+				joining_date: true,
 				skill_type: true,
 				company_id: true,
 				project_id: true,
@@ -203,6 +210,28 @@ export async function loader({
 				id: employee_id,
 			},
 		})
+
+		data = employeeData?.project_location?.payment_field?.map(
+			(payment_field: any) => ({
+				id: payment_field.id,
+				name: payment_field.name,
+				month: months.find(m => m.value === month)?.label,
+				year,
+				value: extractPaymentData({
+					attendance: employeeData?.attendance,
+					payment_field: payment_field,
+					employee: {
+						id: employeeData.id,
+						joining_date: employeeData.joining_date!,
+						company_id: employeeData.company_id!,
+						project_id: employeeData.project_id!,
+						skill_type: employeeData.skill_type!,
+					},
+					month: parseInt(month),
+					year: parseInt(year),
+				}),
+			}),
+		)
 	} else {
 		if (master === 'project_locations' || master === 'projects') {
 			companyList = await companies()
@@ -224,7 +253,7 @@ export async function loader({
 				project_id,
 			)) as any
 
-		data = paymentDataListData
+		data = transformPaymentData({ data: paymentDataListData, month, year })
 		count = paymentDataListCount
 
 		if (url.searchParams.get('export') === 'true') {

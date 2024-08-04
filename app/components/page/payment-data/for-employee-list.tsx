@@ -1,4 +1,4 @@
-import { extractPaymentData, getTableHeaders, months } from '@/utils/misx'
+import { getTableHeaders } from '@/utils/misx'
 import { columns } from '../../columns'
 import { DataTable } from '../../data-table'
 
@@ -17,30 +17,9 @@ export const PaymentDataForEmployeeList = ({
 	page,
 	pageSize,
 }: AttendanceListProps) => {
-	const employeeData = data.project_location.payment_field?.map(
-		(payment_field: any) => ({
-			id: payment_field.id,
-			name: payment_field.name,
-			month: months.find(m => m.value === month)?.label,
-			year,
-			value: extractPaymentData({
-				attendance: data.attendance,
-				payment_field: payment_field,
-				employee: {
-					id: data.id,
-					joining_date: data.joining_date,
-					company_id: data.company_id,
-					project_id: data.project_id,
-					skill_type: data.skill_type,
-				},
-				month: parseInt(month),
-				year: parseInt(year),
-			}),
-		}),
-	)
 
-	const datasHeader = employeeData
-		? getTableHeaders(employeeData, ['id', 'company_id', 'project_id'])
+	const datasHeader = data
+		? getTableHeaders(data, ['id', 'company_id', 'project_id'])
 		: []
 
 	return (
@@ -56,7 +35,7 @@ export const PaymentDataForEmployeeList = ({
 					noSelect: true,
 					noActions: true,
 				})}
-				data={employeeData as any}
+				data={data as any}
 			/>
 		</div>
 	)
