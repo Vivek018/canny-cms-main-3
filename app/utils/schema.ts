@@ -152,7 +152,6 @@ export const Schemas: { [key: string]: any } = {
 			)
 			.optional(),
 		address: zTextArea.optional(),
-		project: z.array(zNumberString).optional(),
 	}),
 	[singleRouteName.employees]: z.object({
 		id: z.string().optional(),
@@ -206,8 +205,6 @@ export const Schemas: { [key: string]: any } = {
 		name: zNumberString,
 		starting_date: z.date().default(new Date()),
 		ending_date: z.date().optional(),
-		company: z.array(zNumberString).optional(),
-		project_location: z.array(zNumberString).optional(),
 	}),
 	[singleRouteName.project_locations]: z.object({
 		id: z.string().optional(),
@@ -217,7 +214,6 @@ export const Schemas: { [key: string]: any } = {
 		postal_code: z.number().min(1000).max(9999999).optional(),
 		esic_code: zNumberString.max(20).optional(),
 		payment_field: z.array(zNumberString).optional(),
-		project: z.array(zNumberString).optional(),
 	}),
 	[singleRouteName.payment_fields]: z.object({
 		id: z.string().optional(),
@@ -228,6 +224,7 @@ export const Schemas: { [key: string]: any } = {
 		is_statutory: z.enum(booleanEnum).default('false'),
 		eligible_after_years: z.number().default(0),
 		percentage_of: z.array(zNumberString).optional(),
+		min_value_of: z.array(zNumberString).optional(),
 		project_location: z.array(zNumberString).optional(),
 	}),
 	[singleRouteName.vehicles]: z.object({
@@ -265,6 +262,7 @@ export const Schemas: { [key: string]: any } = {
 	[singleRouteName.value]: z.object({
 		id: z.string().optional(),
 		value: z.number().min(0).max(10000000),
+		min_value: z.number().min(0).max(10000000).optional(),
 		max_value: z.number().min(0).max(10000000).optional(),
 		type: z.enum(['fixed', 'percentage']).default('fixed'),
 		value_type: z

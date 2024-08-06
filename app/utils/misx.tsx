@@ -413,7 +413,7 @@ export const transformAttendance = ({
 	return returnData.flat()
 }
 
-export const checkEligibility = ({
+export const checkEligiblity = ({
 	fromDate,
 	toDate,
 	noOfYears,
@@ -460,19 +460,15 @@ export const getDateDifference = ({
 	}
 }
 
-export const getEligibilityDate = (fromDate: Date, noOfYears: number): Date => {
-	const millisecondsInASecond = 1000
-	const secondsInAnHour = 3600
-	const hoursInADay = 24
-	const daysInAYear = 365
-
+export const getEligiblityDate = (fromDate: Date, noOfYears: number): Date => {
 	const toDateMilliseconds =
 		fromDate.getTime() +
 		noOfYears *
-			millisecondsInASecond *
-			secondsInAnHour *
-			hoursInADay *
-			daysInAYear
+			MILLISECONDS_IN_A_SECOND *
+			SECONDS_IN_AN_HOUR *
+			HOURS_IN_A_DAY *
+			DAYS_IN_A_YEAR
+
 	const toDate = new Date(toDateMilliseconds)
 	return toDate
 }
@@ -502,6 +498,26 @@ export const extractPaymentData = ({
 			is_deduction: boolean
 			value: {
 				value: number
+				min_value: number
+				max_value: number
+				type: string
+				value_type: string
+				skill_type: string
+				pay_frequency: string
+				month: number
+				year: number
+				company: { id: string }[]
+				project: { id: string }[]
+				employee: { id: string }[]
+			}[]
+		}[]
+		min_value_of?: {
+			name: string
+			eligible_after_years: number
+			is_deduction: boolean
+			value: {
+				value: number
+				min_value: number
 				max_value: number
 				type: string
 				value_type: string
@@ -516,6 +532,7 @@ export const extractPaymentData = ({
 		}[]
 		value: {
 			value: number
+			min_value: number
 			max_value: number
 			type: string
 			value_type: string
@@ -545,7 +562,7 @@ export const extractPaymentData = ({
 	}
 	const isEligible =
 		employee.joining_date instanceof Date
-			? checkEligibility({
+			? checkEligiblity({
 					fromDate: employee.joining_date,
 					toDate: new Date(`${month}/31/${year}`),
 					noOfYears: payment_field.eligible_after_years,
@@ -605,6 +622,25 @@ export const extractPaymentData = ({
 					).toFixed(2),
 				)
 			} else {
+				if (paymentValue.min_value && payment_field.min_value_of?.length) {
+					const totalMinValue = payment_field.min_value_of.reduce(
+						(total, minValuePaymentField) => {
+							const minValue = extractPaymentData({
+								employee,
+								payment_field: minValuePaymentField,
+								attendance,
+								month,
+								year,
+							})
+							return total + minValue
+						},
+						0,
+					)
+					if (totalMinValue < paymentValue.min_value) {
+						value = 0
+						break
+					}
+				}
 				switch (paymentValue.value_type) {
 					case 'daily':
 						value =

@@ -207,6 +207,7 @@ export default function MasterIndex() {
 				headerLink2={
 					analyticsEnabled.find(master => master === name) && `analytics`
 				}
+				noBackButton={true}
 			>
 				<FormFilterSelector name={name}>
 					<input type="hidden" name="all-filters" value={filters.join('--')} />

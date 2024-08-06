@@ -288,12 +288,6 @@ export const inputList: { [key: string]: any } = {
 			vehicle: vehicleList,
 		}
 	},
-	[singleRouteName.companies]: async () => {
-		const projectList = await projects()
-		return {
-			project: projectList,
-		}
-	},
 	[singleRouteName.employees]: async () => {
 		const companyList = await companies()
 		const projectList = await projects()
@@ -321,20 +315,10 @@ export const inputList: { [key: string]: any } = {
 			employee: employeeList,
 		}
 	},
-	[singleRouteName.projects]: async () => {
-		const companyList = await companies()
-		const projectLocationList = await projectLocations()
-		return {
-			company: companyList,
-			project_location: projectLocationList,
-		}
-	},
 	[singleRouteName.project_locations]: async () => {
-		const projectList = await projects()
 		const paymentFieldList = await paymentFields()
 		return {
 			state: statesArray,
-			project: projectList,
 			payment_field: paymentFieldList,
 		}
 	},
@@ -344,6 +328,7 @@ export const inputList: { [key: string]: any } = {
 		return {
 			project_location: projectLocationList,
 			percentage_of: paymentFieldList,
+			min_value_of: paymentFieldList,
 			is_statutory: booleanArray,
 			is_deduction: booleanArray,
 		}

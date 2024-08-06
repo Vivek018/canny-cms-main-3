@@ -33,7 +33,7 @@ async function seed() {
 	console.time('Database has been seeded')
 
 	console.time(`Created Project Locations...`)
-	for (let index = 0; index < Math.floor((Math.random() + 1) * 50); index++) {
+	for (let index = 0; index < Math.floor((Math.random() + 1) * 30); index++) {
 		await prisma.project_Location.create({
 			data: {
 				...createProjectLocation(),
@@ -78,7 +78,7 @@ async function seed() {
 				// },
 				user: {
 					create: Array.from({
-						length: Math.floor((Math.random() + 1) * 5),
+						length: Math.floor((Math.random() + 1) * 3),
 					}).map(() => ({
 						...createUser(),
 						advance_payment: {
@@ -96,7 +96,7 @@ async function seed() {
 	console.timeEnd(`Created Companies...`)
 
 	console.time('Created Main User')
-	for (let i = 0; i < 20; i++) {
+	for (let i = 0; i < 15; i++) {
 		await prisma.user.create({
 			data: {
 				...createUser(),
@@ -119,6 +119,10 @@ async function seed() {
 	console.timeEnd('Created Main User')
 
 	const company = await prisma.company.findMany({
+		select: { id: true },
+	})
+
+	const user = await prisma.user.findMany({
 		select: { id: true },
 	})
 
@@ -155,15 +159,15 @@ async function seed() {
 	console.timeEnd('Created Payment Fields')
 
 	console.time(`Created Vehicles...`)
-	for (let index = 0; index < Math.floor((Math.random() + 1) * 40); index++) {
+	for (let index = 0; index < Math.floor((Math.random() + 1) * 30); index++) {
 		await prisma.vehicle.create({
 			data: {
 				...createVehicle(),
 				vehicle_monthly: {
 					create: (() => {
 						const vehicleMonthlyData = []
-						for (let k = 2024; k <= parseInt(defaultYear); k++) {
-							for (let i = 6; i <= 8; i++) {
+						for (let k = 2023; k <= parseInt(defaultYear); k++) {
+							for (let i = 1; i <= 12; i++) {
 								vehicleMonthlyData.push({
 									month: i,
 									year: k,
@@ -186,40 +190,51 @@ async function seed() {
 
 	console.time(`Created Employees...`)
 
-	for (let index = 0; index < Math.floor((Math.random() + 1) * 100); index++) {
+	for (let index = 0; index < Math.floor((Math.random() + 1) * 50); index++) {
 		await prisma.employee.create({
 			data: {
 				...createEmployee(),
 				attendance: {
-					create: (() => {
-						const attendanceData = []
-						for (let k = 2024; k <= parseInt(defaultYear); k++) {
-							for (let i = 6; i < 8; i++) {
-								const noOfDays = new Date(
-									parseInt(defaultYear),
-									i + 1,
-									0,
-								).getDate()
-								for (let j = 0; j < noOfDays; j++) {
-									const date = new Date(`${k}/${i + 1}/${j + 1}`)
-									const holiday =
-										Math.random() > 0.8 ||
-										(date.getDay() === 0 && Math.random() > 0.2)
-											? true
-											: false
-									attendanceData.push({
-										date: date,
-										present:
-											Math.random() > 0.8 || (holiday && Math.random() > 0.2)
-												? false
-												: true,
-										holiday: holiday,
-									})
+					createMany: {
+						data: (() => {
+							const attendanceData = []
+							for (let k = 2023; k <= parseInt(defaultYear); k++) {
+								for (let i = 0; i < 12; i++) {
+									const noOfDays = new Date(
+										parseInt(defaultYear),
+										i + 1,
+										0,
+									).getDate()
+									for (let j = 0; j < noOfDays; j++) {
+										const date = new Date(`${k}/${i + 1}/${j + 1}`)
+										const holiday =
+											Math.random() > 0.8 ||
+											(date.getDay() === 0 && Math.random() > 0.2)
+												? true
+												: false
+										attendanceData.push({
+											date: date,
+											present:
+												Math.random() > 0.8 || (holiday && Math.random() > 0.2)
+													? false
+													: true,
+											holiday: holiday,
+										})
+									}
 								}
 							}
-						}
-						return attendanceData
-					})(),
+							return attendanceData
+						})(),
+						skipDuplicates: true,
+					},
+				},
+				advance_payment: {
+					create: Array.from({
+						length: Math.floor((Math.random() + 1) * 2),
+					}).map(() => ({
+						...createAdvancePayment(),
+						user_id: user[Math.floor(Math.random() * user.length)].id,
+					})),
 				},
 				company_id: company[Math.floor(Math.random() * company.length)].id,
 				project_id: project[Math.floor(Math.random() * project.length)].id,

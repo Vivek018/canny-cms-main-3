@@ -139,7 +139,6 @@ export const inputTypes: { [key: string]: any } = {
 	[singleRouteName.companies]: {
 		photo: { name: 'photo', type: types.file },
 		address: { name: 'address', type: types.textarea },
-		project: { ...commonTypes.project.project, isMulti: true },
 		value: { ...commonTypes.value.value, isMulti: true },
 	},
 	[singleRouteName.employees]: {
@@ -172,11 +171,6 @@ export const inputTypes: { [key: string]: any } = {
 	[singleRouteName.projects]: {
 		starting_date: { type: types.date },
 		ending_date: { type: types.date },
-		company: { ...commonTypes.company.company, isMulti: true },
-		project_location: {
-			...commonTypes.project_location.project_location,
-			isMulti: true,
-		},
 		value: { ...commonTypes.value.value, isMulti: true },
 	},
 	[singleRouteName.project_locations]: {
@@ -189,7 +183,6 @@ export const inputTypes: { [key: string]: any } = {
 			type: types.select,
 			isMulti: true,
 		},
-		project: { ...commonTypes.project.project, isMulti: true },
 	},
 	[singleRouteName.payment_fields]: {
 		description: { type: types.textarea },
@@ -208,6 +201,12 @@ export const inputTypes: { [key: string]: any } = {
 		eligible_after_years: { type: types.number },
 		percentage_of: {
 			name: 'percentage_of',
+			label: 'name',
+			type: types.select,
+			isMulti: true,
+		},
+		min_value_of: {
+			name: 'min_value_of',
 			label: 'name',
 			type: types.select,
 			isMulti: true,
@@ -242,6 +241,8 @@ export const inputTypes: { [key: string]: any } = {
 	},
 	[singleRouteName.value]: {
 		value: { name: 'value', type: types.number },
+		min_value: { name: 'min_value', type: types.number },
+		max_value: { name: 'max_value', type: types.number },
 		type: { name: 'type', label: 'value', type: types.radio },
 		value_type: { name: 'value_type', label: 'value', type: types.radio },
 		skill_type: { name: 'skill_type', label: 'value', type: types.radio },

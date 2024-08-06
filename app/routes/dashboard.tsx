@@ -59,7 +59,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 		orderBy: {
 			created_at: 'desc' as unknown as 'desc' | 'asc',
 		},
-		take: 8,
+		take: 7,
 	}
 
 	const employees = await prisma.employee.findMany({
@@ -208,7 +208,12 @@ export default function Dashboard() {
 
 	return (
 		<div className="pb-4 pt-1">
-			<Header title={name} headerLink1="/dashboard" headerLink2="/analytics">
+			<Header
+				title={name}
+				headerLink1="/dashboard"
+				headerLink2="/analytics"
+				noBackButton={true}
+			>
 				<Form method="POST" className="flex gap-2">
 					<ExtraFilter
 						month={month}
@@ -278,7 +283,9 @@ export default function Dashboard() {
 										item && 'hidden',
 									)}
 								>
-									<h2 className="text-3xl p-4 text-center font-medium capitalize">No Data</h2>
+									<h2 className="p-4 text-center text-3xl font-medium capitalize">
+										No Data
+									</h2>
 								</div>
 							</div>
 						)
@@ -287,6 +294,7 @@ export default function Dashboard() {
 				<div
 					className={cn(
 						'grid auto-rows-auto grid-cols-1 gap-4 overflow-hidden md:grid-cols-3',
+						data.length === 3 && 'grid-cols-2',
 					)}
 				>
 					{data.map((item, index) => {
@@ -306,6 +314,9 @@ export default function Dashboard() {
 								className={cn(
 									'flex min-h-[400px] max-w-full flex-col gap-2 rounded-md bg-muted p-3',
 									index % 2 === 0 && 'col-span-2',
+									data.length === 3 &&
+										index === data.length - 1 &&
+										'col-span-full',
 									(!itemKey || !itemValue?.length) && 'hidden',
 								)}
 							>
@@ -336,7 +347,7 @@ export default function Dashboard() {
 									})}
 									data={itemValue}
 									className={!itemsHeader ? 'hidden' : 'flex-1'}
-                  cellClassName='h-11'
+									cellClassName="h-11"
 								/>
 							</div>
 						)

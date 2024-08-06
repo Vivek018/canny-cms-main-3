@@ -10,6 +10,7 @@ type HeaderProps = {
 	headerLink2?: string
 	children?: React.ReactNode
 	goBackLink?: string | boolean
+	noBackButton?: boolean
 }
 
 export function Header({
@@ -19,6 +20,7 @@ export function Header({
 	headerLink2,
 	children,
 	goBackLink,
+	noBackButton = false,
 }: HeaderProps) {
 	const navigate = useNavigate()
 	return (
@@ -44,7 +46,7 @@ export function Header({
 					<Button
 						variant="ghost"
 						size="icon"
-						className="h-min w-min px-1.5 py-1"
+						className={cn('h-min w-min px-1.5 py-1', noBackButton && 'hidden')}
 						onClick={() => navigate(-1)}
 					>
 						<Icon name="chevron-left" size="lg" />

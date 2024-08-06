@@ -91,7 +91,7 @@ export const noTabList: { [key: string]: string[] } = {
 	[singleRouteName.employees]: ['value'],
 	[singleRouteName.companies]: ['value'],
 	[singleRouteName.projects]: ['value'],
-	[singleRouteName.payment_fields]: ['percentage_of', 'is_percentage'],
+	[singleRouteName.payment_fields]: ['percentage_of', 'is_percentage', 'min_value_of', 'is_min_value'],
 }
 
 export const sideNavList = [

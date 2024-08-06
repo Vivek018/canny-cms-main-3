@@ -9,11 +9,7 @@ import { DataTable } from '@/components/data-table'
 import { ExtraFilter } from '@/components/extra-filter'
 import { PaginationButtons } from '@/components/pagination-buttons'
 import { defaultYear, TAB_PAGE_SIZE } from '@/constant'
-import {
-	extractPaymentData,
-	getMonthLabel,
-	getTableHeaders,
-} from '@/utils/misx'
+import { getEligiblityDate, getTableHeaders } from '@/utils/misx'
 import { prisma } from '@/utils/servers/db.server'
 import {
 	companies,
@@ -35,8 +31,6 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 			id: true,
 			full_name: true,
 			designation: true,
-			joining_date: true,
-			skill_type: true,
 			company_id: true,
 			project_id: true,
 			company: {
@@ -53,112 +47,6 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 							name: true,
 							is_deduction: true,
 							eligible_after_years: true,
-							percentage_of: {
-								select: {
-									name: true,
-									is_deduction: true,
-									eligible_after_years: true,
-									value: {
-										select: {
-											value: true,
-											min_value: true,
-											max_value: true,
-											type: true,
-											value_type: true,
-											skill_type: true,
-											pay_frequency: true,
-											month: true,
-											year: true,
-											company: {
-												select: { id: true },
-											},
-											project: {
-												select: { id: true },
-											},
-											employee: {
-												select: { id: true },
-											},
-										},
-										where: {
-											year: {
-												lte: parseInt(year),
-											},
-										},
-										orderBy: [
-											{ year: 'desc' },
-											{ month: 'desc' },
-											{ id: 'desc' },
-										],
-									},
-								},
-							},
-							min_value_of: {
-								select: {
-									name: true,
-									is_deduction: true,
-									eligible_after_years: true,
-									value: {
-										select: {
-											value: true,
-											min_value: true,
-											max_value: true,
-											type: true,
-											value_type: true,
-											skill_type: true,
-											pay_frequency: true,
-											month: true,
-											year: true,
-											company: {
-												select: { id: true },
-											},
-											project: {
-												select: { id: true },
-											},
-											employee: {
-												select: { id: true },
-											},
-										},
-										where: {
-											year: {
-												lte: parseInt(year),
-											},
-										},
-										orderBy: [
-											{ year: 'desc' },
-											{ month: 'desc' },
-											{ id: 'desc' },
-										],
-									},
-								},
-							},
-							value: {
-								select: {
-									value: true,
-									min_value: true,
-									max_value: true,
-									type: true,
-									value_type: true,
-									skill_type: true,
-									pay_frequency: true,
-									month: true,
-									year: true,
-									company: {
-										select: { id: true },
-									},
-									project: {
-										select: { id: true },
-									},
-									employee: {
-										select: { id: true },
-									},
-								},
-								where: {
-									year: {
-										lte: parseInt(year),
-									},
-								},
-								orderBy: [{ year: 'desc' }, { month: 'desc' }, { id: 'desc' }],
-							},
 						},
 						where: {
 							id: route,
@@ -166,6 +54,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 					},
 				},
 			},
+			joining_date: true,
 		},
 		where: {
 			AND: [
@@ -213,36 +102,12 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 	})
 
 	for (let i = 0; i < data.length; i++) {
-		for (let j = 1; j <= 12; j++) {
-			data[i][getMonthLabel(j.toString())?.substring(0, 3) + '_' + year] =
-				extractPaymentData({
-					employee: {
-						id: data[i].id,
-						joining_date: data[i].joining_date,
-						company_id: data[i].company_id,
-						project_id: data[i].project_id,
-						skill_type: data[i].skill_type,
-					},
-					payment_field: data[i].project_location?.payment_field[0],
-					attendance: await prisma.attendance.findMany({
-						select: {
-							no_of_hours: true,
-							present: true,
-							holiday: true,
-						},
-						where: {
-							employee_id: data[i].id,
-							date: {
-								gte: new Date(`${j}/1/${year}`),
-								lte: new Date(`${j}/31/${year}`),
-							},
-						},
-					}),
-					month: j,
-					year: parseInt(year),
-				})
-		}
+		data[i]['eligiblity_date'] = getEligiblityDate(
+			data[i].joining_date,
+			data[i].project_location.payment_field[0].eligible_after_years,
+		)
 	}
+
 	return json({
 		data,
 		count,
@@ -258,7 +123,7 @@ export async function action(args: ActionFunctionArgs) {
 	return extraFilterAction(args)
 }
 
-export default function Report() {
+export default function EligibleDate() {
 	const {
 		data,
 		count,

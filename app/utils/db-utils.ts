@@ -91,6 +91,7 @@ export const paymentFields = [
 		},
 		value: {
 			value: 200,
+			min_value: 15000,
 			value_type: 'monthly',
 			month: 4,
 			year: 1960,
@@ -203,11 +204,11 @@ export function createEmployee() {
 		employee_code: faker.string.alphanumeric({ length: 6 }),
 		uan_no: faker.string.alphanumeric({ length: 6 }),
 		esic_id: faker.string.alphanumeric({ length: 6 }),
-		pan_number: faker.string.alphanumeric({ length: 6 }),
+		pan_number: faker.string.alphanumeric({ length: 10 }),
 		mobile: faker.string.numeric({ length: 10 }),
 		status: statusArray[Math.floor(Math.random() * statusArray.length)],
 		joining_date: faker.date.past({ years: 10 }),
-		exit_date: faker.date.future(),
+		exit_date: faker.date.past(),
 		aadhar_number: faker.string.numeric({ length: 12 }),
 		permanent_address:
 			faker.location.streetAddress() +
@@ -316,6 +317,6 @@ export function createAdvancePayment() {
 		label: faker.lorem.word(),
 		amount: parseInt(faker.finance.amount()),
 		credited: booleanArray[Math.floor(Math.random() * booleanArray.length)],
-		payment_date: faker.date.past(),
+		payment_date: faker.date.past({years: 10}),
 	}
 }

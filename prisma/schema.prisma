@@ -139,6 +139,7 @@ model Attendance {
   employee_id String?
   employee    Employee? @relation(fields: [employee_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
+  @@unique([date, employee_id])
   @@index([date, present])
   @@index([date, employee_id])
   @@index([date, present, employee_id])
@@ -158,9 +159,12 @@ model Payment_Field {
 
   percentage_of Payment_Field[] @relation("percentage_of")
   is_percentage Payment_Field[] @relation("percentage_of")
+  min_value_of  Payment_Field[] @relation("min_value_of")
+  is_min_value  Payment_Field[] @relation("min_value_of")
 
   value            Value[]
   project_location Project_Location[]
+  payment_FieldId  String?
 
   @@index([is_statutory])
   @@index([is_deduction])
@@ -171,6 +175,7 @@ model Payment_Field {
 model Value {
   id            String   @id @default(cuid())
   value         Float
+  min_value     Float?
   max_value     Float?
   type          String   @default("fixed")
   value_type    String   @default("daily")
@@ -242,6 +247,7 @@ model Advance_Payment {
   employee_id String?
   employee    Employee? @relation(fields: [employee_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
+  @@index([label, amount, employee_id, user_id, payment_date])
   @@index([user_id])
   @@index([employee_id])
   @@index([employee_id, user_id])
@@ -297,7 +303,7 @@ model Document {
 model Vehicle {
   id               String   @id @default(cuid())
   name             String
-  number           String
+  number           String   @unique
   type             String   @default("car")
   year_bought      Int?
   total_kms_driven Int?

@@ -27,11 +27,26 @@ import { prisma } from '@/utils/servers/db.server'
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
 	const master = params._master
-	const routeName = singleRouteName[master as string] as 'user'
-	const data = await prisma[routeName].findFirst({
+	const routeName = singleRouteName[master as string] as 'payment_Field'
+	const data: any = await prisma[routeName].findFirst({
 		select: await getRouteNameSelector(routeName),
 		where: { id: params.route },
 	})
+	let customTabList: string[] | null = null
+
+	if (routeName === singleRouteName['payment_fields']) {
+		if (
+			data?.eligible_after_years &&
+			data?.eligible_after_years > 0 &&
+			!tabList[routeName].find((name: string) => name === 'eligibile_date')
+		) {
+			customTabList = [...tabList[routeName], 'eligible_date']
+		} else {
+			customTabList = tabList[routeName]
+		}
+	} else {
+		customTabList = tabList[routeName]
+	}
 
 	return json({
 		data,
@@ -40,7 +55,7 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
 		keys: getRouteNameSelectorKeys(routeName),
 		headings: getRouteNameSelectorHeading(routeName),
 		routeFieldList: [
-			...(tabList[routeName] ?? []),
+			...(customTabList ?? tabList[routeName] ?? []),
 			...getRouteNameSelectorList(routeName),
 		],
 	})
@@ -99,13 +114,13 @@ export default function Route() {
 				) : null}
 			</div>
 			<div className="flex flex-1 flex-col rounded-md">
-				<div className="flex gap-1.5 border-b border-accent">
+				<div className="flex gap-1 border-b border-accent">
 					<NavLink
 						key={defaultRoute}
 						to={defaultRoute}
 						className={() =>
 							cn(
-								'w-max rounded-t-sm px-3 py-2 text-sm capitalize hover:bg-accent hover:text-accent-foreground',
+								'w-max rounded-t-[3px] px-2.5 py-1.5 text-sm capitalize hover:bg-accent hover:text-accent-foreground',
 								pathname === defaultRoute ||
 									pathname === `${defaultRoute}/update` ||
 									pathname === `${defaultRoute}/delete` ||
@@ -124,7 +139,7 @@ export default function Route() {
 								to={`${tab}`}
 								className={({ isActive }) =>
 									cn(
-										'w-max rounded-t-sm px-3 py-2 text-sm capitalize hover:bg-accent hover:text-accent-foreground',
+										'w-max rounded-t-[3px] px-2.5 py-1.5 text-sm capitalize hover:bg-accent hover:text-accent-foreground',
 										isActive &&
 											'cursor-default bg-secondary text-secondary-foreground hover:bg-secondary hover:text-secondary-foreground',
 									)

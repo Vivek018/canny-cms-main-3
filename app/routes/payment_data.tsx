@@ -63,6 +63,53 @@ export async function loader({ request }: LoaderFunctionArgs) {
 									value: {
 										select: {
 											value: true,
+											min_value: true,
+											max_value: true,
+											pay_frequency: true,
+											type: true,
+											value_type: true,
+											skill_type: true,
+											month: true,
+											year: true,
+											company: { select: { id: true } },
+											project: { select: { id: true } },
+											employee: { select: { id: true } },
+										},
+										where: {
+											OR: [
+												{
+													year: {
+														lt: parseInt(year),
+													},
+												},
+												{
+													month: {
+														lte: parseInt(month),
+													},
+													year: {
+														equals: parseInt(year),
+													},
+												},
+											],
+										},
+										orderBy: [
+											{ year: 'desc' },
+											{ month: 'desc' },
+											{ id: 'desc' },
+										],
+										take: 1,
+									},
+								},
+							},
+							min_value_of: {
+								select: {
+									name: true,
+									is_deduction: true,
+									eligible_after_years: true,
+									value: {
+										select: {
+											value: true,
+											min_value: true,
 											max_value: true,
 											pay_frequency: true,
 											type: true,
@@ -103,6 +150,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 							value: {
 								select: {
 									value: true,
+									min_value: true,
 									max_value: true,
 									type: true,
 									value_type: true,
@@ -178,7 +226,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 		skip: (parseInt(page) - 1) * PAGE_SIZE,
 	})
 
-	const transformedData = transformPaymentData({ data, month, year });
+	const transformedData = transformPaymentData({ data, month, year })
 	const count = await prisma.employee.count({
 		where: {
 			joining_date: {
@@ -227,6 +275,53 @@ export async function loader({ request }: LoaderFunctionArgs) {
 										value: {
 											select: {
 												value: true,
+												min_value: true,
+												max_value: true,
+												type: true,
+												value_type: true,
+												skill_type: true,
+												pay_frequency: true,
+												month: true,
+												year: true,
+												company: { select: { id: true } },
+												project: { select: { id: true } },
+												employee: { select: { id: true } },
+											},
+											where: {
+												OR: [
+													{
+														year: {
+															lt: parseInt(year),
+														},
+													},
+													{
+														month: {
+															lte: parseInt(month),
+														},
+														year: {
+															equals: parseInt(year),
+														},
+													},
+												],
+											},
+											orderBy: [
+												{ year: 'desc' },
+												{ month: 'desc' },
+												{ id: 'desc' },
+											],
+											take: 1,
+										},
+									},
+								},
+								min_value_of: {
+									select: {
+										name: true,
+										is_deduction: true,
+										eligible_after_years: true,
+										value: {
+											select: {
+												value: true,
+												min_value: true,
 												max_value: true,
 												type: true,
 												value_type: true,
@@ -267,6 +362,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 								value: {
 									select: {
 										value: true,
+										min_value: true,
 										max_value: true,
 										type: true,
 										value_type: true,
@@ -345,6 +441,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
 			take: MAX_DATA_LENGTH * 2,
 			skip: (parseInt(page) - 1) * PAGE_SIZE,
 		})
+
+		exportData = transformPaymentData({ data: exportData, month, year })
 	}
 
 	return json({
@@ -353,7 +451,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 		month,
 		year,
 		page,
-		exportData: exportData,
+		exportData,
 	})
 }
 
@@ -378,12 +476,17 @@ export default function PaymentData() {
 	useEffect(() => {
 		if (exportData) {
 			setFlattenData(() =>
-				transformPaymentData({ data: exportData, month, year }).map(
-					(value: any) =>
-						flattenObject({
-							obj: value,
-							ignore: ['id', 'attendance', 'percentage_of', 'value'],
-						}),
+				exportData.map((value: any) =>
+					flattenObject({
+						obj: value,
+						ignore: [
+							'id',
+							'attendance',
+							'percentage_of',
+							'min_value_of',
+							'value',
+						],
+					}),
 				),
 			)
 		}

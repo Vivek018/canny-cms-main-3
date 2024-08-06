@@ -142,7 +142,12 @@ export default function Analytics() {
 	)
 	return (
 		<div className="grid gap-4 pb-4 pt-1">
-			<Header title={name} headerLink1="/dashboard" headerLink2="/analytics">
+			<Header
+				title={name}
+				headerLink1="/dashboard"
+				headerLink2="/analytics"
+				noBackButton={true}
+			>
 				<Form method="POST" className="flex gap-2">
 					<ExtraFilter
 						month={month}
