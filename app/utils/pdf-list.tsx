@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from '@react-pdf/renderer'
-import { Field } from '@/components/forms'
-import { dateConvertForInput } from './misx'
+import { Field, RadioField } from '@/components/forms'
+import { defaultMonth, defaultYear } from '@/constant'
+import { dateConvertForInput, getYears, months } from './misx'
 
 export const letterTypesInputList: { [key: string]: any } = {
 	employees: {
@@ -55,9 +56,31 @@ export const letterTypesInputList: { [key: string]: any } = {
 				</>
 			)
 		},
-		joining: <></>,
 		experience: null,
-		pay_slip: null,
+    termination: null,
+		joining: <></>,
+		pay_slip: () => {
+			const prefix = 'pay_slip'
+			return (
+				<>
+					<RadioField
+						showLabel="label"
+						label="value"
+						name={`${prefix}_month`}
+						list={months}
+						defaultValue={defaultMonth}
+						isNotId={true}
+					/>
+					<RadioField
+						label="value"
+						name={`${prefix}_year`}
+						list={getYears(10)}
+						defaultValue={defaultYear}
+						isNotId={true}
+					/>
+				</>
+			)
+		},
 	},
 	advances: {
 		bill: <></>,

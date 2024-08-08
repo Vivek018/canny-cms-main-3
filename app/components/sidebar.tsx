@@ -113,6 +113,9 @@ export function Sidebar({ className, theme, sidebar }: SidebarProps) {
 												cn(
 													'my-1 flex cursor-pointer rounded-sm py-1.5 text-sm tracking-wide first:mt-0 hover:bg-accent',
 													isActive
+														? 'bg-secondary/65 hover:bg-secondary'
+														: '',
+													link === location.pathname
 														? 'cursor-auto bg-secondary shadow-sm hover:bg-secondary'
 														: '',
 													'max-lg:justify-center max-lg:p-2.5',
@@ -177,7 +180,7 @@ export function Sidebar({ className, theme, sidebar }: SidebarProps) {
 			</div>
 			<div
 				className={cn(
-					'mb-6 mt-auto flex w-full flex-row items-center justify-between border-t-[1.5px] border-foreground py-3 px-1.5',
+					'mb-6 mt-auto flex w-full flex-row items-center justify-between border-t-[1.5px] border-foreground px-1.5 py-3',
 					'max-lg:mb-4 max-lg:flex-col max-lg:gap-1',
 					open && 'mb-4 flex-col gap-1',
 				)}
@@ -185,7 +188,7 @@ export function Sidebar({ className, theme, sidebar }: SidebarProps) {
 				<DetailsMenu className="static">
 					<DetailsMenuTrigger
 						className={cn(
-							'flex w-max flex-1 cursor-pointer items-center gap-2 rounded-sm border-none py-1.5 px-2 text-sm tracking-wide',
+							'flex w-max flex-1 cursor-pointer items-center gap-2 rounded-sm border-none px-2 py-1.5 text-sm tracking-wide',
 							'max-lg:p-3',
 							open && 'p-3',
 						)}

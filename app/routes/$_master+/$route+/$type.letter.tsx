@@ -20,14 +20,15 @@ export async function loader({ params }: LoaderFunctionArgs) {
 	const type = params.type!
 
 	// this being null is very important
-	const list = pdfInputList[master]
-		? pdfInputList[master][params.type!]
-			? await pdfInputList[master][params.type!]()
-			: null
-		: null
+	const list = pdfInputList[master] ? pdfInputList[master][params.type!] : null
 
+	const onlyHasAddress =
+		list && Object.keys(list).length === 1 && list.no_address === true
 	// this being null is very important
-	const data = await pdfData[master]({ type: type, id: route })
+	const data =
+		!list || onlyHasAddress
+			? await pdfData[master]({ type: type, id: route })
+			: {}
 
 	if (list && list.no_address === true) {
 		data.no_address = true
@@ -45,11 +46,19 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
 export async function action({ params, request }: ActionFunctionArgs) {
 	const master = params._master!
+	const route = params.route!
+	const type = params.type!
 	const formData = await request.formData()
 
 	const keysList = pdfInputList[master][params.type!]
-		? Object.keys(await pdfInputList[master][params.type!]())
+		? Object.keys(pdfInputList[master][params.type!])
 		: []
+
+	const onlyHasAddress =
+		keysList &&
+		keysList.length === 1 &&
+		keysList.includes('no_address') === true
+
 	// this being null is very important
 	let data: any = {}
 
@@ -58,6 +67,14 @@ export async function action({ params, request }: ActionFunctionArgs) {
 		const value = formData.get(key)
 		data[key] = value
 	}
+
+	data =
+		keysList && !onlyHasAddress
+			? {
+					...data,
+					...(await pdfData[master]({ type: type, id: route, ...data })),
+				}
+			: data
 
 	return json({ actionData: data })
 }

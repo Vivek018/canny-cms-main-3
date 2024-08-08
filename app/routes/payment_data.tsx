@@ -494,7 +494,7 @@ export default function PaymentData() {
 
 	return (
 		<div className="flex h-[98%] flex-col py-[5px]">
-			<Header title={name}>
+			<Header title={name} noBackButton={true}>
 				<Form method="POST" className="flex gap-2">
 					<ExtraFilter
 						month={month}
